@@ -1,0 +1,75 @@
+.inserted-video {
+    margin-right: 4px;
+    display: inline-block !important;
+    width: 210px;
+    margin-bottom: 24px;
+}
+
+.external-content {
+    flex-wrap: wrap;
+    display: flex;
+}
+
+.inserted-video #thumbnail {
+    display: inline-block;
+    position: relative;
+    height: 118px;
+    width: 210px;
+    flex: none;
+}
+
+.inserted-video .video-duration {
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.8);
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    bottom: 0px;
+    color: rgb(255, 255, 255);
+    cursor: pointer;
+    display: flex;
+    flex-direction: row;
+    font-family: Roboto, Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    height: 12px;
+    letter-spacing: 0.5px;
+    line-height: 12px;
+    margin-bottom: 4px;
+    margin-left: 4px;
+    margin-right: 4px;
+    margin-top: 4px;
+    padding-bottom: 3px;
+    padding-left: 4px;
+    padding-right: 4px;
+    padding-top: 3px;
+    position: absolute;
+    right: 0px;
+    -moz-text-size-adjust: none"
+}
+
+.inserted-video #meta.ytd-grid-video-renderer {
+    padding-right: 0;
+}
+
+.inserted-video .bitchute {
+    position: absolute;
+    bottom: 4px;
+    opacity: 0.9;
+    left: 4px;
+    padding: 2px;
+    background: #EF4137;
+    letter-spacing: 0.5px;
+    color: #fff;
+    border-radius: 2px;
+    display: inline-block;
+}
+
+.inserted-video a.channel-title:hover {
+    color: var(--yt-endpoint-hover-color, var(--yt-spec-text-primary)) !important;
+}
+
+.inserted-video a.channel-title {
+    color: var(--ytd-metadata-line-color, var(--yt-spec-text-secondary)) !important;
+}
