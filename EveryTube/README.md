@@ -4,6 +4,10 @@ EveryTube populates your YouTube Subscriptions page with content from other vide
 
 Currently supports Bitchute, more coming coon.
 
+## Installation
+
+Install via the Chrome web store: https://chrome.google.com/webstore/detail/everytube/emegoeklfbjgngcomlbmdjcmbaeilhhd/related
+
 ## What it does
 
 When you visit https://www.youtube.com/feed/subscriptions
