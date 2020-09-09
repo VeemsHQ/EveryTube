@@ -1,7 +1,7 @@
 {
     "name": "EveryTube",
     "description": "Populates your YouTube Subscriptions page with content from other video platforms. Currently supports Bitchute, more coming coon.",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "icons": {
         "128": "images/icon-128.png"
     },
