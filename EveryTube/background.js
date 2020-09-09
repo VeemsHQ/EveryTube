@@ -20,7 +20,7 @@ function parseVideosBitchute(html_text) {
     for (var videoElIdx in videoEls) {
         var el = videoEls[videoElIdx];
         if (isElement(el) == true) {
-            var base = 'https://www.bitchute.com/';
+            var base = 'https://www.bitchute.com';
             var videoLink = base + el.querySelector('a').getAttribute('href');
             var thumbUrl = el.querySelector('img').getAttribute('data-src');
             var videoTitle = el.querySelector('.video-card-title a').innerText;
