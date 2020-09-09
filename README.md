@@ -6,7 +6,7 @@ Currently supports Bitchute, more coming coon.
 
 ## Installation
 
-Install via the Chrome web store: https://chrome.google.com/webstore/detail/everytube/emegoeklfbjgngcomlbmdjcmbaeilhhd/related
+Install via the Chrome web store: https://chrome.google.com/webstore/detail/everytube/emegoeklfbjgngcomlbmdjcmbaeilhhd/
 
 ## What it does
 
