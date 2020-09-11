@@ -64,44 +64,52 @@ function supplant(string, o) {
 }
 
 function addContent(externalSubscriptions) {
-  var todayVideos = externalSubscriptions.today;
-  var newHtml = '<div class="external-content">';
-  for (var idx in todayVideos) {
-    var videoHtml = supplant(videoTmpl, todayVideos[idx]);
-    newHtml = newHtml + videoHtml;
-  }
-  newHtml = newHtml + '</div>';
-  var div = document.createElement('div');
-  div.innerHTML = newHtml.trim();
-  var parent = document.getElementsByTagName('ytd-grid-renderer')[0];
-  parent.prepend(div.firstChild);
 
-  var yesterdayVideos = externalSubscriptions.yesterday;
-  var newHtml = '<div class="external-content">';
-  for (var idx in yesterdayVideos) {
-    var videoHtml = supplant(videoTmpl, yesterdayVideos[idx]);
-    newHtml = newHtml + videoHtml;
-  }
-  newHtml = newHtml + '</div>';
-  var div = document.createElement('div');
-  div.innerHTML = newHtml.trim();
-  var parent = document.getElementsByTagName('ytd-grid-renderer')[1];
-  parent.prepend(div.firstChild);
+  elementsReady('ytd-item-section-renderer #items').then((elements) => {
+    // today
+    var parent = elements[0];
+    var todayVideos = externalSubscriptions.today;
+    var newHtml = '<div class="external-content">';
+    for (var idx in todayVideos) {
+      var videoHtml = supplant(videoTmpl, todayVideos[idx]);
+      newHtml = newHtml + videoHtml;
+    }
+    newHtml = newHtml + '</div>';
+    var div = document.createElement('div');
+    div.innerHTML = newHtml.trim();
+    parent.prepend(div.firstChild);
 
-  var thisWeekVideos = externalSubscriptions.thisWeek;
-  var newHtml = '<div class="external-content">';
-  for (var idx in thisWeekVideos) {
-    var videoHtml = supplant(videoTmpl, thisWeekVideos[idx]);
-    newHtml = newHtml + videoHtml;
-  }
-  newHtml = newHtml + '</div>';
-  var div = document.createElement('div');
-  div.innerHTML = newHtml.trim();
-  var parent = document.getElementsByTagName('ytd-grid-renderer')[2];
-  parent.prepend(div.firstChild);
+    // yesterday
+    var parent = elements[1];
+    var yesterdayVideos = externalSubscriptions.yesterday;
+    var newHtml = '<div class="external-content">';
+    for (var idx in yesterdayVideos) {
+      var videoHtml = supplant(videoTmpl, yesterdayVideos[idx]);
+      newHtml = newHtml + videoHtml;
+    }
+    newHtml = newHtml + '</div>';
+    var div = document.createElement('div');
+    div.innerHTML = newHtml.trim();
+    parent.prepend(div.firstChild);
+
+    // this week
+    var parent = elements[2];
+    var thisWeekVideos = externalSubscriptions.thisWeek;
+    var newHtml = '<div class="external-content">';
+    for (var idx in thisWeekVideos) {
+      var videoHtml = supplant(videoTmpl, thisWeekVideos[idx]);
+      newHtml = newHtml + videoHtml;
+    }
+    newHtml = newHtml + '</div>';
+    var div = document.createElement('div');
+    div.innerHTML = newHtml.trim();
+    parent.prepend(div.firstChild);
+  });
+
 }
+
+
 function addExternalSubscriptionVideos() {
-  console.debug('addExternalSubscriptionVideos');
   chrome.runtime.sendMessage(
     {
       type: 'UPDATE_THE_PAGE',
@@ -111,21 +119,57 @@ function addExternalSubscriptionVideos() {
         var content = externalSubscriptions[idx];
         if (content.type === 'content') {
           addContent(content);
-        } else if (content.type === null) {
-          alert('none');
         }
       }
     },
   );
 }
 
+function elementsReady(selector) {
+  return new Promise((resolve, reject) => {
+    const el = document.querySelectorAll(selector);
+    if (el) { resolve(el); }
+    new MutationObserver((mutationRecords, observer) => {
+      Array.from(document.querySelectorAll(selector)).forEach((element) => {
+        resolve(element);
+        observer.disconnect();
+      });
+    })
+      .observe(document.documentElement, {
+        childList: true,
+        subtree: true
+      });
+  });
+}
+
+function elementReady(selector) {
+  return new Promise((resolve, reject) => {
+    const el = document.querySelector(selector);
+    if (el) { resolve(el); }
+    new MutationObserver((mutationRecords, observer) => {
+      Array.from(document.querySelectorAll(selector)).forEach((element) => {
+        resolve(element);
+        observer.disconnect();
+      });
+    })
+      .observe(document.documentElement, {
+        childList: true,
+        subtree: true
+      });
+  });
+}
+
+function onClickHandler() {
+  setTimeout(() => {  addExternalSubscriptionVideos() }, 2000);
+}
+
+
 (function () {
   if (window.location.pathname === '/feed/subscriptions') {
     addExternalSubscriptionVideos();
   }
-  document
-    .querySelector('a[title=Subscriptions]')
-    .addEventListener('click', function () {
-      addExternalSubscriptionVideos();
-    });
+  elementReady('a[title=Subscriptions]').then((element) => {
+    element.addEventListener('click', onClickHandler);
+  });
+
 })();

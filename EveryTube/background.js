@@ -21,15 +21,16 @@ var PROVIDER_LOGGED_IN = {
   lbry: false,
 };
 var LBRY_AUTH_TOKEN = null;
+var CACHE_MAX = 60000 * 10;
 
 function isElement(o) {
   return typeof HTMLElement === 'object'
     ? o instanceof HTMLElement //DOM2
     : o &&
-        typeof o === 'object' &&
-        o !== null &&
-        o.nodeType === 1 &&
-        typeof o.nodeName === 'string';
+    typeof o === 'object' &&
+    o !== null &&
+    o.nodeType === 1 &&
+    typeof o.nodeName === 'string';
 }
 
 function kFormatter(num) {
@@ -76,7 +77,7 @@ function parseVideosFromBitchute(html_text) {
       if (videoPublishedOn.includes('1 day,') === true) {
         videosPublishedYesterday.push(video);
       } else if (
-        videoPublishedOn.includes('hours ago') &&
+        (videoPublishedOn.includes('minutes ago') || videoPublishedOn.includes('hour ago') || videoPublishedOn.includes('hours ago')) &&
         !videoPublishedOn.includes('day')
       ) {
         videosPublishedToday.push(video);
@@ -165,7 +166,9 @@ function parseVideosFromLbry(items) {
   var videosPublishedYesterday = [];
   var videosPublishedThisWeek = [];
   for (var idx in items) {
+
     var item = items[idx];
+
     if (
       item.value_type == 'stream' &&
       item.is_channel_signature_valid == true &&
@@ -200,14 +203,14 @@ function parseVideosFromLbry(items) {
         channelTitle: channelTitle,
         channelUrl: channelUrl,
         videoDuration: videoDuration,
-        videoViews: 'unknown',
+        videoViews: '∞',
         videoPublishedOn: videoPublishedOn,
         provider: PROVIDER_LABELS['lbry'],
       };
       if (videoPublishedOn === '1 day ago') {
         videosPublishedYesterday.push(video);
       } else if (
-        videoPublishedOn.includes('hours ago') &&
+        (videoPublishedOn.includes('minutes ago') || videoPublishedOn.includes('hour ago') || videoPublishedOn.includes('hours ago')) &&
         !videoPublishedOn.includes('day')
       ) {
         videosPublishedToday.push(video);
@@ -285,6 +288,10 @@ function fetchRetry(url, delay, tries, fetchOptions = {}) {
 updateProviderLoginState();
 
 async function fetchContentBitchute() {
+  var cached = await getFromCache();
+  if(cached) {
+    return cached;
+  }
   var allVideos = [];
   if (loggedInToBitchute() === true) {
     console.debug('BitChute logged in, getting content');
@@ -306,6 +313,13 @@ async function fetchContentBitchute() {
 }
 
 async function fetchContentLbry(previousAllVideos) {
+  var cached = await getFromCache();
+  console.log(1);
+  console.log(cached);
+
+  if(cached) {
+    return cached;
+  }
   var allVideos = [];
   if (previousAllVideos) {
     allVideos = previousAllVideos;
@@ -347,7 +361,7 @@ async function fetchContentLbry(previousAllVideos) {
       jsonrpc: '2.0',
       method: 'claim_search',
       params: {
-        page_size: 20,
+        page_size: 200,
         page: 1,
         no_totals: true,
         channel_ids: channelClaimIds,
@@ -405,10 +419,39 @@ async function fetchContentLbry(previousAllVideos) {
   }
 }
 
+function getFromCache() {
+  return new Promise(resolve => {
+    chrome.storage.local.get(['everytube_cache'], function (items) {
+      if (items.everytube_cache.cache && items.everytube_cache.cacheTime) {
+        if (items.everytube_cache.cacheTime > Date.now() - CACHE_MAX) {
+          console.log('Cache hit')
+          resolve(items.everytube_cache.cache);
+        }
+      }
+      console.log('No cache hit');
+      resolve(null);
+    });
+  })
+}
+
+async function setCache(data) {
+  var cached = await getFromCache();
+  if(cached) {
+    return cached;
+  } else {
+    chrome.storage.local.set({'everytube_cache': { cache: data, cacheTime: Date.now() }}, function () {
+      console.log('Set cache');
+      return data;
+    });
+  }
+}
+
+
 chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
   if ((msg.type = 'UPDATE_THE_PAGE')) {
     fetchContentBitchute()
       .then((res) => fetchContentLbry(res))
+      .then((res) => setCache(res))
       .then((res) => sendResponse(res));
   }
   return true;
