@@ -103,25 +103,36 @@ function addContent(externalSubscriptions) {
     var parent = document.getElementsByTagName('ytd-grid-renderer')[2];
     parent.prepend(div.firstChild);
 }
+function addExternalSubscriptionVideos() {
+
+    chrome.runtime.sendMessage({
+        type: 'UPDATE_THE_PAGE'
+    },
+        function (externalSubscriptions) {
+            console.log('externalSubscriptions:');
+            console.log(externalSubscriptions)
+            for (var idx in externalSubscriptions) {
+                var content = externalSubscriptions[idx];
+                if(content.type === 'content') {
+                    addContent(content);
+                } else if (content.type === null) {
+                    alert('none');
+                }
+            }
+        });
+}
+
 
 (function () {
-    function addExternalSubscriptionVideos() {
 
-        chrome.runtime.sendMessage({
-            type: 'UPDATE_THE_PAGE'
-        },
-            function (externalSubscriptions) {
-                console.log('externalSubscriptions:');
-                console.log(externalSubscriptions)
-                for (var idx in externalSubscriptions) {
-                    var content = externalSubscriptions[idx];
-                    if(content.type === 'content') {
-                        addContent(content);
-                    } else if (content.type === null) {
-                        alert('none');
-                    }
-                }
-            });
-    }
     addExternalSubscriptionVideos();
+
 })();
+
+// TODO fix
+// document.querySelector('a[title=Subscriptions]').onclick = addExternalSubscriptionVideos;
+
+// document.querySelector('a[title=Subscriptions]').addEventListener("click", function() {
+//     console.log('clickkk');
+//     addExternalSubscriptionVideos();
+// });
