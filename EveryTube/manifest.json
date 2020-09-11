@@ -30,6 +30,7 @@
         "https://lbry.tv/",
         "https://lbry.tv/$/following",
         "https://api.lbry.tv/*",
+        "https://api.lbry.com/*",
         "cookies"
     ],
     "manifest_version": 2

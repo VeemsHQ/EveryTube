@@ -1,384 +1,427 @@
 var PROVIDER_URLS = {
-    bitchute: "https://www.bitchute.com",
-    lbry: "https://api.lbry.tv/api/v1/proxy?m=claim_search",
+  bitchute: 'https://www.bitchute.com',
+  lbry: 'https://api.lbry.tv/api/v1/proxy?m=claim_search',
+  lbry_me: 'https://api.lbry.com/user/me?auth_token=',
+  lbry_subs_list: 'https://api.lbry.com/subscription/list?auth_token=',
 };
 var PROVIDER_LABELS = {
-    'bitchute': 'BitChute',
-    'lbry': 'lbry.tv',
-}
+  bitchute: 'BitChute',
+  lbry: 'lbry.tv',
+};
 var PROVIDER_DOMAINS = [
-    new URL(PROVIDER_URLS["bitchute"]).host,
-    new URL(PROVIDER_URLS["lbry"]).host,
+  new URL(PROVIDER_URLS['bitchute']).host,
+  new URL(PROVIDER_URLS['lbry']).host,
 ];
 var PROVIDER_LOGIN_STATE_COOKIE = {
-    bitchute: "sessionid",
-    lbry: "auth_token",
+  bitchute: 'sessionid',
+  lbry: 'auth_token',
 };
 var PROVIDER_LOGGED_IN = {
-    bitchute: false,
-    lbry: false,
+  bitchute: false,
+  lbry: false,
 };
 var LBRY_AUTH_TOKEN = null;
 
 function isElement(o) {
-    return typeof HTMLElement === "object" ?
-        o instanceof HTMLElement //DOM2
-        :
-        o &&
-        typeof o === "object" &&
+  return typeof HTMLElement === 'object'
+    ? o instanceof HTMLElement //DOM2
+    : o &&
+        typeof o === 'object' &&
         o !== null &&
         o.nodeType === 1 &&
-        typeof o.nodeName === "string";
+        typeof o.nodeName === 'string';
 }
 
 function kFormatter(num) {
-    return Math.abs(num) > 999 ?
-        Math.sign(num) * (Math.abs(num) / 1000).toFixed(1) + "k" :
-        Math.sign(num) * Math.abs(num);
+  return Math.abs(num) > 999
+    ? Math.sign(num) * (Math.abs(num) / 1000).toFixed(1) + 'k'
+    : Math.sign(num) * Math.abs(num);
 }
 
 function parseVideosFromBitchute(html_text) {
-    var parser = new DOMParser();
-    var htmlDoc = parser.parseFromString(html_text, "text/html");
-    var subs = htmlDoc.getElementById("listing-subscribed");
-    var videoEls = subs.querySelectorAll(".video-card");
-    var videosPublishedToday = [];
-    var videosPublishedYesterday = [];
-    var videosPublishedThisWeek = [];
-    for (var videoElIdx in videoEls) {
-        var el = videoEls[videoElIdx];
-        if (isElement(el) == true) {
-            var base = PROVIDER_URLS["bitchute"];
-            var videoLink = base + el.querySelector("a").getAttribute("href");
-            var thumbUrl = el.querySelector("img").getAttribute("data-src");
-            var videoTitle = el.querySelector(".video-card-title a").innerText;
-            var channelTitle = el.querySelector(".video-card-channel a").innerText;
-            var channelUrl =
-                base + el.querySelector(".video-card-channel a").getAttribute("href");
-            var videoDuration = el.querySelector(".video-duration").innerText;
-            var videoPublishedOn = el.querySelector(".video-card-published")
-                .innerText;
-            var videoViews = parseInt(
-                el.querySelector(".video-views").innerText.trim()
-            );
-            var video = {
-                videoLink: videoLink,
-                thumbUrl: thumbUrl,
-                videoTitle: videoTitle,
-                channelTitle: channelTitle,
-                channelUrl: channelUrl,
-                videoDuration: videoDuration,
-                videoViews: kFormatter(videoViews),
-                videoPublishedOn: videoPublishedOn,
-                provider: PROVIDER_LABELS["bitchute"],
-            };
-            if (videoPublishedOn.includes("1 day,") === true) {
-                videosPublishedYesterday.push(video);
-            } else if (
-                videoPublishedOn.includes("hours ago") &&
-                !videoPublishedOn.includes("day")
-            ) {
-                videosPublishedToday.push(video);
-            } else {
-                videosPublishedThisWeek.push(video);
-            }
-        }
+  var parser = new DOMParser();
+  var htmlDoc = parser.parseFromString(html_text, 'text/html');
+  var subs = htmlDoc.getElementById('listing-subscribed');
+  var videoEls = subs.querySelectorAll('.video-card');
+  var videosPublishedToday = [];
+  var videosPublishedYesterday = [];
+  var videosPublishedThisWeek = [];
+  for (var videoElIdx in videoEls) {
+    var el = videoEls[videoElIdx];
+    if (isElement(el) == true) {
+      var base = PROVIDER_URLS['bitchute'];
+      var videoLink = base + el.querySelector('a').getAttribute('href');
+      var thumbUrl = el.querySelector('img').getAttribute('data-src');
+      var videoTitle = el.querySelector('.video-card-title a').innerText;
+      var channelTitle = el.querySelector('.video-card-channel a').innerText;
+      var channelUrl =
+        base + el.querySelector('.video-card-channel a').getAttribute('href');
+      var videoDuration = el.querySelector('.video-duration').innerText;
+      var videoPublishedOn = el.querySelector('.video-card-published')
+        .innerText;
+      var videoViews = parseInt(
+        el.querySelector('.video-views').innerText.trim(),
+      );
+      var video = {
+        videoLink: videoLink,
+        thumbUrl: thumbUrl,
+        videoTitle: videoTitle,
+        channelTitle: channelTitle,
+        channelUrl: channelUrl,
+        videoDuration: videoDuration,
+        videoViews: kFormatter(videoViews),
+        videoPublishedOn: videoPublishedOn,
+        provider: PROVIDER_LABELS['bitchute'],
+      };
+      if (videoPublishedOn.includes('1 day,') === true) {
+        videosPublishedYesterday.push(video);
+      } else if (
+        videoPublishedOn.includes('hours ago') &&
+        !videoPublishedOn.includes('day')
+      ) {
+        videosPublishedToday.push(video);
+      } else {
+        videosPublishedThisWeek.push(video);
+      }
     }
-    return {
-        type: "content",
-        today: videosPublishedToday,
-        yesterday: videosPublishedYesterday,
-        thisWeek: videosPublishedThisWeek,
-    };
+  }
+  return {
+    type: 'content',
+    today: videosPublishedToday,
+    yesterday: videosPublishedYesterday,
+    thisWeek: videosPublishedThisWeek,
+  };
 }
 
 function timeAgo(time) {
-    var units = [{
-            name: "second",
-            limit: 60,
-            in_seconds: 1
-        },
-        {
-            name: "minute",
-            limit: 3600,
-            in_seconds: 60
-        },
-        {
-            name: "hour",
-            limit: 86400,
-            in_seconds: 3600
-        },
-        {
-            name: "day",
-            limit: 604800,
-            in_seconds: 86400
-        },
-        {
-            name: "week",
-            limit: 2629743,
-            in_seconds: 604800
-        },
-        {
-            name: "month",
-            limit: 31556926,
-            in_seconds: 2629743
-        },
-        {
-            name: "year",
-            limit: null,
-            in_seconds: 31556926
-        },
-    ];
-    var diff = (new Date() - new Date(time * 1000)) / 1000;
-    if (diff < 5) return "now";
+  var units = [
+    {
+      name: 'second',
+      limit: 60,
+      in_seconds: 1,
+    },
+    {
+      name: 'minute',
+      limit: 3600,
+      in_seconds: 60,
+    },
+    {
+      name: 'hour',
+      limit: 86400,
+      in_seconds: 3600,
+    },
+    {
+      name: 'day',
+      limit: 604800,
+      in_seconds: 86400,
+    },
+    {
+      name: 'week',
+      limit: 2629743,
+      in_seconds: 604800,
+    },
+    {
+      name: 'month',
+      limit: 31556926,
+      in_seconds: 2629743,
+    },
+    {
+      name: 'year',
+      limit: null,
+      in_seconds: 31556926,
+    },
+  ];
+  var diff = (new Date() - new Date(time * 1000)) / 1000;
+  if (diff < 5) return 'now';
 
-    var i = 0;
-    while ((unit = units[i++])) {
-        if (diff < unit.limit || !unit.limit) {
-            var diff = Math.floor(diff / unit.in_seconds);
-            return diff + " " + unit.name + (diff > 1 ? "s" : "") + " ago";
-        }
+  var i = 0;
+  while ((unit = units[i++])) {
+    if (diff < unit.limit || !unit.limit) {
+      var diff = Math.floor(diff / unit.in_seconds);
+      return diff + ' ' + unit.name + (diff > 1 ? 's' : '') + ' ago';
     }
+  }
 }
 
 function secondsToTime(secs) {
-    var hours = Math.floor(secs / (60 * 60));
+  var hours = Math.floor(secs / (60 * 60));
 
-    var divisor_for_minutes = secs % (60 * 60);
-    var minutes = Math.floor(divisor_for_minutes / 60);
+  var divisor_for_minutes = secs % (60 * 60);
+  var minutes = Math.floor(divisor_for_minutes / 60);
 
-    var divisor_for_seconds = divisor_for_minutes % 60;
-    var seconds = Math.ceil(divisor_for_seconds);
+  var divisor_for_seconds = divisor_for_minutes % 60;
+  var seconds = Math.ceil(divisor_for_seconds);
 
-    var obj = {
-        h: hours,
-        m: minutes,
-        s: seconds,
-    };
-    return obj;
+  var obj = {
+    h: hours,
+    m: minutes,
+    s: seconds,
+  };
+  return obj;
 }
 
 function parseVideosFromLbry(items) {
-    console.log("parseVideosFromLbry");
-    var videosPublishedToday = [];
-    var videosPublishedYesterday = [];
-    var videosPublishedThisWeek = [];
-    for (var idx in items) {
-        var item = items[idx];
-        if (
-            item.value_type == "stream" &&
-            item.is_channel_signature_valid == true
-        ) {
-            var videoLink =
-                "https://lbry.tv/" +
-                item.signing_channel.normalized_name +
-                "/" +
-                item.normalized_name;
-            var thumbUrl = item.value.thumbnail.url;
-            var videoTitle = item.value.title;
-            var channelTitle = item.signing_channel.value.title;
-            var channelUrl =
-                "https://lbry.tv/" + item.signing_channel.normalized_name;
-            var durationData = secondsToTime(item.value.video.duration);
-            if (durationData.h) {
-                var videoDuration =
-                    durationData.h + ":" + durationData.m + ":" + durationData.s;
-            } else {
-                var videoDuration = durationData.m + ":" + durationData.s;
-            }
-            var videoPublishedOn = timeAgo(item.meta.creation_timestamp);
-            var video = {
-                videoLink: videoLink,
-                thumbUrl: thumbUrl,
-                videoTitle: videoTitle,
-                channelTitle: channelTitle,
-                channelUrl: channelUrl,
-                videoDuration: videoDuration,
-                videoViews: "unknown",
-                videoPublishedOn: videoPublishedOn,
-                provider: PROVIDER_LABELS["lbry"],
-            };
-            if (videoPublishedOn === '1 day ago') {
-                videosPublishedYesterday.push(video);
-            } else if (
-                videoPublishedOn.includes("hours ago") &&
-                !videoPublishedOn.includes("day")
-            ) {
-                videosPublishedToday.push(video);
-            } else {
-                videosPublishedThisWeek.push(video);
-            }
-        }
+  console.log('parseVideosFromLbry');
+  var videosPublishedToday = [];
+  var videosPublishedYesterday = [];
+  var videosPublishedThisWeek = [];
+  for (var idx in items) {
+    var item = items[idx];
+    if (
+      item.value_type == 'stream' &&
+      item.is_channel_signature_valid == true &&
+      typeof item.value.video !== 'undefined'
+    ) {
+      var videoLink =
+        'https://lbry.tv/' +
+        item.signing_channel.normalized_name +
+        '/' +
+        item.normalized_name;
+      var thumbUrl = item.value.thumbnail.url;
+      var videoTitle = item.value.title;
+      if (item.signing_channel.value.title) {
+        var channelTitle = item.signing_channel.value.title;
+      } else {
+        var channelTitle = item.signing_channel.name;
+      }
+      var channelUrl =
+        'https://lbry.tv/' + item.signing_channel.normalized_name;
+      var durationData = secondsToTime(item.value.video.duration);
+      if (durationData.h) {
+        var videoDuration =
+          durationData.h + ':' + durationData.m + ':' + durationData.s;
+      } else {
+        var videoDuration = durationData.m + ':' + durationData.s;
+      }
+      var videoPublishedOn = timeAgo(item.meta.creation_timestamp);
+      var video = {
+        videoLink: videoLink,
+        thumbUrl: thumbUrl,
+        videoTitle: videoTitle,
+        channelTitle: channelTitle,
+        channelUrl: channelUrl,
+        videoDuration: videoDuration,
+        videoViews: 'unknown',
+        videoPublishedOn: videoPublishedOn,
+        provider: PROVIDER_LABELS['lbry'],
+      };
+      if (videoPublishedOn === '1 day ago') {
+        videosPublishedYesterday.push(video);
+      } else if (
+        videoPublishedOn.includes('hours ago') &&
+        !videoPublishedOn.includes('day')
+      ) {
+        videosPublishedToday.push(video);
+      } else {
+        videosPublishedThisWeek.push(video);
+      }
     }
-    return {
-        type: "content",
-        today: videosPublishedToday,
-        yesterday: videosPublishedYesterday,
-        thisWeek: videosPublishedThisWeek,
-    };
+  }
+  return {
+    type: 'content',
+    today: videosPublishedToday,
+    yesterday: videosPublishedYesterday,
+    thisWeek: videosPublishedThisWeek,
+  };
 }
 
 function updateProviderLoginState() {
-    console.log("updateProviderLoginState");
-    PROVIDER_LOGGED_IN["bitchute"] = false;
-    var cookieName = PROVIDER_LOGIN_STATE_COOKIE["bitchute"];
-    var cookieUrl = PROVIDER_URLS["bitchute"];
-    chrome.cookies.get({
-        url: cookieUrl,
-        name: cookieName
-    }, function(cookie) {
-        if (cookie != null && cookie.value.length > 0) {
-            PROVIDER_LOGGED_IN["bitchute"] = true;
-        }
-    });
+  console.log('updateProviderLoginState');
+  PROVIDER_LOGGED_IN['bitchute'] = false;
+  var cookieName = PROVIDER_LOGIN_STATE_COOKIE['bitchute'];
+  var cookieUrl = PROVIDER_URLS['bitchute'];
+  chrome.cookies.get(
+    {
+      url: cookieUrl,
+      name: cookieName,
+    },
+    function (cookie) {
+      if (cookie != null && cookie.value.length > 0) {
+        PROVIDER_LOGGED_IN['bitchute'] = true;
+      }
+    },
+  );
 
-    PROVIDER_LOGGED_IN["lbry"] = false;
-    var cookieName = PROVIDER_LOGIN_STATE_COOKIE["lbry"];
-    var cookieUrl = PROVIDER_URLS["lbry"];
-    chrome.cookies.get({
-        url: cookieUrl,
-        name: cookieName
-    }, function(cookie) {
-        if (cookie != null && cookie.value.length > 0) {
-            LBRY_AUTH_TOKEN = cookie.value;
-            PROVIDER_LOGGED_IN["lbry"] = true;
-        }
-    });
+  PROVIDER_LOGGED_IN['lbry'] = false;
+  var cookieName = PROVIDER_LOGIN_STATE_COOKIE['lbry'];
+  var cookieUrl = PROVIDER_URLS['lbry'];
+  chrome.cookies.get(
+    {
+      url: cookieUrl,
+      name: cookieName,
+    },
+    function (cookie) {
+      if (cookie != null && cookie.value.length > 0) {
+        LBRY_AUTH_TOKEN = cookie.value;
+        PROVIDER_LOGGED_IN['lbry'] = true;
+      }
+    },
+  );
 }
 
 function loggedInToBitchute() {
-    return PROVIDER_LOGGED_IN["bitchute"] === true;
+  return PROVIDER_LOGGED_IN['bitchute'] === true;
 }
 
 function loggedInToLbry() {
-    return PROVIDER_LOGGED_IN["lbry"] === true;
+  return PROVIDER_LOGGED_IN['lbry'] === true;
 }
 
 function wait(delay) {
-    return new Promise((resolve) => setTimeout(resolve, delay));
+  return new Promise((resolve) => setTimeout(resolve, delay));
 }
 
 function fetchRetry(url, delay, tries, fetchOptions = {}) {
-    function onError(err) {
-        triesLeft = tries - 1;
-        if (!triesLeft) {
-            throw err;
-        }
-        return wait(delay).then(() =>
-            fetchRetry(url, delay, triesLeft, fetchOptions)
-        );
+  function onError(err) {
+    triesLeft = tries - 1;
+    if (!triesLeft) {
+      throw err;
     }
-    return fetch(url, fetchOptions).catch(onError);
+    return wait(delay).then(() =>
+      fetchRetry(url, delay, triesLeft, fetchOptions),
+    );
+  }
+  return fetch(url, fetchOptions).catch(onError);
 }
 
 updateProviderLoginState();
 
 async function fetchContentBitchute() {
-    var allVideos = [];
-    if (loggedInToBitchute() === true) {
-        console.debug("BitChute logged in, getting content");
-        var url = PROVIDER_URLS["bitchute"];
-        await fetchRetry(url, 0.2, 5, {
-                method: "GET",
-                credentials: "include",
-            })
-            .then((response) => response.text())
-            .then((json_data) => {
-                return parseVideosFromBitchute(json_data);
-            })
-            .then((result) => allVideos.push(result))
-            .catch((err) => {
-                console.log(err);
-            });
-    }
-    console.log(allVideos);
-    return allVideos;
+  var allVideos = [];
+  if (loggedInToBitchute() === true) {
+    console.debug('BitChute logged in, getting content');
+    var url = PROVIDER_URLS['bitchute'];
+    await fetchRetry(url, 0.2, 5, {
+      method: 'GET',
+      credentials: 'include',
+    })
+      .then((response) => response.text())
+      .then((json_data) => {
+        return parseVideosFromBitchute(json_data);
+      })
+      .then((result) => allVideos.push(result))
+      .catch((err) => {
+        console.log(err);
+      });
+  }
+  console.log(allVideos);
+  return allVideos;
 }
 
 async function fetchContentLbry(previousAllVideos) {
-    var allVideos = [];
-    if (previousAllVideos) {
-        allVideos = previousAllVideos;
-    }
-    if (loggedInToLbry() === true) {
-        console.log("Lbry logged in, getting content");
-        var url = PROVIDER_URLS["lbry"];
-        var user_id = 1599832757025;
-        var gte = "<" + parseInt(new Date().getTime() / 1000).toString();
-        var req = {
-            jsonrpc: "2.0",
-            method: "claim_search",
-            params: {
-                page_size: 20,
-                page: 1,
-                no_totals: true,
-                channel_ids: ["c9da929d12afe6066acc89eb044b552f0d63782a"],
-                not_channel_ids: [],
-                not_tags: [
-                    "porn",
-                    "porno",
-                    "nsfw",
-                    "mature",
-                    "xxx",
-                    "sex",
-                    "creampie",
-                    "blowjob",
-                    "handjob",
-                    "vagina",
-                    "boobs",
-                    "big boobs",
-                    "big dick",
-                    "pussy",
-                    "cumshot",
-                    "anal",
-                    "hard fucking",
-                    "ass",
-                    "fuck",
-                    "hentai",
-                ],
-                order_by: ["release_time"],
-                // "release_time": "<" + parseInt(new Date().getTime()/1000).toString(),
-                // "release_time": "<1599832740",
-                release_time: gte,
-                fee_amount: ">=0",
-                include_purchase_receipt: true,
-            },
-            id: user_id,
-        };
-        await fetchRetry(url, 0.2, 5, {
-                method: "POST",
-                credentials: "include",
-                body: JSON.stringify(req),
-                headers: {
-                    "x-lbry-auth-token": LBRY_AUTH_TOKEN
-                },
-            })
-            .then((response) => response.json())
-            .then((json_data) => {
-                return parseVideosFromLbry(json_data.result.items);
-            })
-            .then((result) => allVideos.push(result))
-            .catch((err) => {
-                console.log(err);
-            });
-        return allVideos;
-    }
+  var allVideos = [];
+  if (previousAllVideos) {
+    allVideos = previousAllVideos;
+  }
+  if (loggedInToLbry() === true) {
+    console.log('Lbry logged in, getting content');
+    var url = PROVIDER_URLS['lbry'];
+    var releaseTimeQuery =
+      '<' + parseInt(new Date().getTime() / 1000).toString();
+    var meUrl = PROVIDER_URLS['lbry_me'] + LBRY_AUTH_TOKEN;
+    var userId = await fetchRetry(meUrl, 0.2, 5, {
+      method: 'GET',
+      credentials: 'include',
+    })
+      .then((response) => response.json())
+      .then((json_data) => {
+        userId = json_data.data.id;
+        return userId;
+      });
+    var channelClaimIds = await fetchRetry(
+      PROVIDER_URLS['lbry_subs_list'] + LBRY_AUTH_TOKEN,
+      0.2,
+      5,
+      {
+        method: 'GET',
+        credentials: 'include',
+      },
+    )
+      .then((response) => response.json())
+      .then(function (json_data) {
+        console.log(json_data);
+        var ids = [];
+        for (var idx in json_data.data) {
+          var item = json_data.data[idx];
+          ids.push(item.claim_id);
+        }
+        return ids;
+      });
+
+    var req = {
+      jsonrpc: '2.0',
+      method: 'claim_search',
+      params: {
+        page_size: 20,
+        page: 1,
+        no_totals: true,
+        channel_ids: channelClaimIds,
+        not_channel_ids: [],
+        not_tags: [
+          'porn',
+          'porno',
+          'nsfw',
+          'mature',
+          'xxx',
+          'sex',
+          'creampie',
+          'blowjob',
+          'handjob',
+          'vagina',
+          'boobs',
+          'big boobs',
+          'big dick',
+          'pussy',
+          'cumshot',
+          'anal',
+          'hard fucking',
+          'ass',
+          'fuck',
+          'hentai',
+        ],
+        order_by: ['release_time'],
+        // "release_time": "<" + parseInt(new Date().getTime()/1000).toString(),
+        // "release_time": "<1599832740",
+        release_time: releaseTimeQuery,
+        fee_amount: '>=0',
+        include_purchase_receipt: true,
+      },
+      id: userId,
+    };
+    await fetchRetry(url, 0.2, 5, {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify(req),
+      headers: {
+        'x-lbry-auth-token': LBRY_AUTH_TOKEN,
+      },
+    })
+      .then((response) => response.json())
+      .then((json_data) => {
+        return parseVideosFromLbry(json_data.result.items);
+      })
+      .then((result) => allVideos.push(result))
+      .catch((err) => {
+        console.log(err);
+      });
+    return allVideos;
+  }
 }
 
-chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
-    if ((msg.type = "UPDATE_THE_PAGE")) {
-        fetchContentBitchute()
-            .then((res) => fetchContentLbry(res))
-            .then((res) => sendResponse(res));
-    }
-    return true;
+chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
+  if ((msg.type = 'UPDATE_THE_PAGE')) {
+    fetchContentBitchute()
+      .then((res) => fetchContentLbry(res))
+      .then((res) => sendResponse(res));
+  }
+  return true;
 });
 
-chrome.cookies.onChanged.addListener(function(cookies) {
-    if (
-        PROVIDER_DOMAINS.includes(cookies.cookie.domain) === true &&
-        cookies.cookie.name === "sessionid"
-    ) {
-        updateProviderLoginState();
-    }
+chrome.cookies.onChanged.addListener(function (cookies) {
+  if (
+    PROVIDER_DOMAINS.includes(cookies.cookie.domain) === true &&
+    cookies.cookie.name === 'sessionid'
+  ) {
+    updateProviderLoginState();
+  }
 });
