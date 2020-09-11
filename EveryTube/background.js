@@ -1,3 +1,14 @@
+var PROVIDER_URLS = {
+    'bitchute': 'https://www.bitchute.com',
+}
+var PROVIDER_DOMAINS = [
+    (new URL(PROVIDER_URLS['bitchute'])).host
+];
+var PROVIDER_LOGIN_STATE_COOKIE = {
+    'bitchute': 'sessionid',
+}
+var PROVIDER_LOGGED_IN = {};
+
 function isElement(o) {
     return (
         typeof HTMLElement === "object" ? o instanceof HTMLElement : //DOM2
@@ -9,7 +20,7 @@ function kFormatter(num) {
     return Math.abs(num) > 999 ? Math.sign(num) * ((Math.abs(num) / 1000).toFixed(1)) + 'k' : Math.sign(num) * Math.abs(num)
 }
 
-function parseVideosBitchute(html_text) {
+function parseVideosFromBitchute(html_text) {
     var parser = new DOMParser();
     var htmlDoc = parser.parseFromString(html_text, 'text/html');
     var subs = htmlDoc.getElementById('listing-subscribed');
@@ -20,7 +31,7 @@ function parseVideosBitchute(html_text) {
     for (var videoElIdx in videoEls) {
         var el = videoEls[videoElIdx];
         if (isElement(el) == true) {
-            var base = 'https://www.bitchute.com';
+            var base = PROVIDER_URLS['bitchute'];
             var videoLink = base + el.querySelector('a').getAttribute('href');
             var thumbUrl = el.querySelector('img').getAttribute('data-src');
             var videoTitle = el.querySelector('.video-card-title a').innerText;
@@ -49,10 +60,27 @@ function parseVideosBitchute(html_text) {
         }
     }
     return {
+        type: 'bitchute_content',
         today: videosPublishedToday,
         yesterday: videosPublishedYesterday,
         thisWeek: videosPublishedThisWeek,
     }
+}
+
+function updateProviderLoginState() {
+    console.log('updateProviderLoginState');
+    PROVIDER_LOGGED_IN['bitchute'] = false;
+    var cookieName = PROVIDER_LOGIN_STATE_COOKIE['bitchute'];
+    var cookieUrl = PROVIDER_URLS['bitchute'];
+    chrome.cookies.get({"url": cookieUrl, "name": cookieName}, function(cookie) {
+        if (cookie) {
+            PROVIDER_LOGGED_IN['bitchute'] = true;
+        }
+    });
+}
+
+function loggedInToBitchute() {
+    return PROVIDER_LOGGED_IN['bitchute'] === true;
 }
 
 
@@ -71,20 +99,33 @@ function fetchRetry(url, delay, tries, fetchOptions = {}) {
     return fetch(url, fetchOptions).catch(onError);
 }
 
+
 chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
     if (msg.type = 'UPDATE_THE_PAGE') {
-        var url = 'https://www.bitchute.com/';
-        fetchRetry(url, 0.2, 5, {
-            method: 'GET',
-            credentials: 'include'
-        })
-            .then(response => response.text())
-            .then((data) => {
-                var videos = parseVideosBitchute(data);
-                return sendResponse(videos);
-            }).catch((err) => {
-                console.log(err);
-            });
+        updateProviderLoginState();
+        if(loggedInToBitchute() === true) {
+            console.log('BitChute logged in, getting content');
+            var url = PROVIDER_URLS['bitchute'];
+            fetchRetry(url, 0.2, 5, {
+                method: 'GET',
+                credentials: 'include'
+            })
+                .then(response => response.text())
+                .then((data) => {
+                    var videos = parseVideosFromBitchute(data);
+                    return sendResponse(videos);
+                }).catch((err) => {
+                    console.log(err);
+                });
+        } else {
+            console.log('No providers logged in, doing nothing');
+        }
     }
     return true;
+});
+
+chrome.cookies.onChanged.addListener(function (cookies) {
+    if (PROVIDER_DOMAINS.includes(cookies.cookie.domain) === true && cookies.cookie.name === 'sessionid') {
+        updateProviderLoginState();
+    }
 });

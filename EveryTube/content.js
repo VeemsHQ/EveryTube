@@ -66,6 +66,44 @@ function supplant (string, o) {
     );
 };
 
+function addBitchuteContent(externalSubscriptions) {
+    var todayVideos = externalSubscriptions.today;
+    var newHtml = '<div class="external-content">';
+    for(var idx in todayVideos) {
+        var videoHtml = supplant(bitchuteVideoTmpl, todayVideos[idx]);
+        newHtml = newHtml + videoHtml;
+    }
+    newHtml = newHtml + '</div>';
+    var div = document.createElement('div');
+    div.innerHTML = newHtml.trim();
+    var parent = document.getElementsByTagName('ytd-grid-renderer')[0];
+    parent.prepend(div.firstChild);
+
+    var yesterdayVideos = externalSubscriptions.yesterday;
+    var newHtml = '<div class="external-content">';
+    for(var idx in yesterdayVideos) {
+        var videoHtml = supplant(bitchuteVideoTmpl, yesterdayVideos[idx]);
+        newHtml = newHtml + videoHtml;
+    }
+    newHtml = newHtml + '</div>';
+    var div = document.createElement('div');
+    div.innerHTML = newHtml.trim();
+    var parent = document.getElementsByTagName('ytd-grid-renderer')[1];
+    parent.prepend(div.firstChild);
+
+    var thisWeekVideos = externalSubscriptions.thisWeek;
+    var newHtml = '<div class="external-content">';
+    for(var idx in thisWeekVideos) {
+        var videoHtml = supplant(bitchuteVideoTmpl, thisWeekVideos[idx]);
+        newHtml = newHtml + videoHtml;
+    }
+    newHtml = newHtml + '</div>';
+    var div = document.createElement('div');
+    div.innerHTML = newHtml.trim();
+    var parent = document.getElementsByTagName('ytd-grid-renderer')[2];
+    parent.prepend(div.firstChild);
+}
+
 (function () {
     function addExternalSubscriptionVideos() {
 
@@ -73,41 +111,12 @@ function supplant (string, o) {
             type: 'UPDATE_THE_PAGE'
         },
             function (externalSubscriptions) {
-                var todayVideos = externalSubscriptions.today;
-                var newHtml = '<div class="external-content">';
-                for(var idx in todayVideos) {
-                    var videoHtml = supplant(bitchuteVideoTmpl, todayVideos[idx]);
-                    newHtml = newHtml + videoHtml;
+                console.log(externalSubscriptions)
+                if(externalSubscriptions.type === 'bitchute_content') {
+                    addBitchuteContent(externalSubscriptions);
+                } else if (externalSubscriptions.type === null) {
+                    alert('none');
                 }
-                newHtml = newHtml + '</div>';
-                var div = document.createElement('div');
-                div.innerHTML = newHtml.trim();
-                var parent = document.getElementsByTagName('ytd-grid-renderer')[0];
-                parent.prepend(div.firstChild);
-
-                var yesterdayVideos = externalSubscriptions.yesterday;
-                var newHtml = '<div class="external-content">';
-                for(var idx in yesterdayVideos) {
-                    var videoHtml = supplant(bitchuteVideoTmpl, yesterdayVideos[idx]);
-                    newHtml = newHtml + videoHtml;
-                }
-                newHtml = newHtml + '</div>';
-                var div = document.createElement('div');
-                div.innerHTML = newHtml.trim();
-                var parent = document.getElementsByTagName('ytd-grid-renderer')[1];
-                parent.prepend(div.firstChild);
-
-                var thisWeekVideos = externalSubscriptions.thisWeek;
-                var newHtml = '<div class="external-content">';
-                for(var idx in thisWeekVideos) {
-                    var videoHtml = supplant(bitchuteVideoTmpl, thisWeekVideos[idx]);
-                    newHtml = newHtml + videoHtml;
-                }
-                newHtml = newHtml + '</div>';
-                var div = document.createElement('div');
-                div.innerHTML = newHtml.trim();
-                var parent = document.getElementsByTagName('ytd-grid-renderer')[2];
-                parent.prepend(div.firstChild);
             });
     }
     addExternalSubscriptionVideos();

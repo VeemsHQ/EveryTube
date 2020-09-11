@@ -26,7 +26,8 @@
     ],
     "permissions": [
         "https://www.youtube.com/feed/subscriptions*",
-        "https://www.bitchute.com/"
+        "https://www.bitchute.com/",
+        "cookies"
     ],
     "manifest_version": 2
 }
