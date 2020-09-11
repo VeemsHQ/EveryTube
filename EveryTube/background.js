@@ -161,7 +161,6 @@ function secondsToTime(secs) {
 }
 
 function parseVideosFromLbry(items) {
-  console.log('parseVideosFromLbry');
   var videosPublishedToday = [];
   var videosPublishedYesterday = [];
   var videosPublishedThisWeek = [];
@@ -226,7 +225,6 @@ function parseVideosFromLbry(items) {
 }
 
 function updateProviderLoginState() {
-  console.log('updateProviderLoginState');
   PROVIDER_LOGGED_IN['bitchute'] = false;
   var cookieName = PROVIDER_LOGIN_STATE_COOKIE['bitchute'];
   var cookieUrl = PROVIDER_URLS['bitchute'];
@@ -304,7 +302,6 @@ async function fetchContentBitchute() {
         console.log(err);
       });
   }
-  console.log(allVideos);
   return allVideos;
 }
 
@@ -314,7 +311,6 @@ async function fetchContentLbry(previousAllVideos) {
     allVideos = previousAllVideos;
   }
   if (loggedInToLbry() === true) {
-    console.log('Lbry logged in, getting content');
     var url = PROVIDER_URLS['lbry'];
     var releaseTimeQuery =
       '<' + parseInt(new Date().getTime() / 1000).toString();
@@ -339,7 +335,6 @@ async function fetchContentLbry(previousAllVideos) {
     )
       .then((response) => response.json())
       .then(function (json_data) {
-        console.log(json_data);
         var ids = [];
         for (var idx in json_data.data) {
           var item = json_data.data[idx];

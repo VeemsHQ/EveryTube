@@ -1,4 +1,3 @@
-
 var videoTmpl = `
 <div class="inserted-video style-scope ytd-grid-video-renderer">
 
@@ -57,82 +56,76 @@ var videoTmpl = `
 </div>
 `;
 
-function supplant (string, o) {
-    return string.replace(/{([^{}]*)}/g,
-        function (a, b) {
-            var r = o[b];
-            return typeof r === 'string' || typeof r === 'number' ? r : a;
-        }
-    );
-};
+function supplant(string, o) {
+  return string.replace(/{([^{}]*)}/g, function (a, b) {
+    var r = o[b];
+    return typeof r === 'string' || typeof r === 'number' ? r : a;
+  });
+}
 
 function addContent(externalSubscriptions) {
-    var todayVideos = externalSubscriptions.today;
-    var newHtml = '<div class="external-content">';
-    for(var idx in todayVideos) {
-        var videoHtml = supplant(videoTmpl, todayVideos[idx]);
-        newHtml = newHtml + videoHtml;
-    }
-    newHtml = newHtml + '</div>';
-    var div = document.createElement('div');
-    div.innerHTML = newHtml.trim();
-    var parent = document.getElementsByTagName('ytd-grid-renderer')[0];
-    parent.prepend(div.firstChild);
+  var todayVideos = externalSubscriptions.today;
+  var newHtml = '<div class="external-content">';
+  for (var idx in todayVideos) {
+    var videoHtml = supplant(videoTmpl, todayVideos[idx]);
+    newHtml = newHtml + videoHtml;
+  }
+  newHtml = newHtml + '</div>';
+  var div = document.createElement('div');
+  div.innerHTML = newHtml.trim();
+  var parent = document.getElementsByTagName('ytd-grid-renderer')[0];
+  parent.prepend(div.firstChild);
 
-    var yesterdayVideos = externalSubscriptions.yesterday;
-    var newHtml = '<div class="external-content">';
-    for(var idx in yesterdayVideos) {
-        var videoHtml = supplant(videoTmpl, yesterdayVideos[idx]);
-        newHtml = newHtml + videoHtml;
-    }
-    newHtml = newHtml + '</div>';
-    var div = document.createElement('div');
-    div.innerHTML = newHtml.trim();
-    var parent = document.getElementsByTagName('ytd-grid-renderer')[1];
-    parent.prepend(div.firstChild);
+  var yesterdayVideos = externalSubscriptions.yesterday;
+  var newHtml = '<div class="external-content">';
+  for (var idx in yesterdayVideos) {
+    var videoHtml = supplant(videoTmpl, yesterdayVideos[idx]);
+    newHtml = newHtml + videoHtml;
+  }
+  newHtml = newHtml + '</div>';
+  var div = document.createElement('div');
+  div.innerHTML = newHtml.trim();
+  var parent = document.getElementsByTagName('ytd-grid-renderer')[1];
+  parent.prepend(div.firstChild);
 
-    var thisWeekVideos = externalSubscriptions.thisWeek;
-    var newHtml = '<div class="external-content">';
-    for(var idx in thisWeekVideos) {
-        var videoHtml = supplant(videoTmpl, thisWeekVideos[idx]);
-        newHtml = newHtml + videoHtml;
-    }
-    newHtml = newHtml + '</div>';
-    var div = document.createElement('div');
-    div.innerHTML = newHtml.trim();
-    var parent = document.getElementsByTagName('ytd-grid-renderer')[2];
-    parent.prepend(div.firstChild);
+  var thisWeekVideos = externalSubscriptions.thisWeek;
+  var newHtml = '<div class="external-content">';
+  for (var idx in thisWeekVideos) {
+    var videoHtml = supplant(videoTmpl, thisWeekVideos[idx]);
+    newHtml = newHtml + videoHtml;
+  }
+  newHtml = newHtml + '</div>';
+  var div = document.createElement('div');
+  div.innerHTML = newHtml.trim();
+  var parent = document.getElementsByTagName('ytd-grid-renderer')[2];
+  parent.prepend(div.firstChild);
 }
 function addExternalSubscriptionVideos() {
-
-    chrome.runtime.sendMessage({
-        type: 'UPDATE_THE_PAGE'
+  console.debug('addExternalSubscriptionVideos');
+  chrome.runtime.sendMessage(
+    {
+      type: 'UPDATE_THE_PAGE',
     },
-        function (externalSubscriptions) {
-            console.log('externalSubscriptions:');
-            console.log(externalSubscriptions)
-            for (var idx in externalSubscriptions) {
-                var content = externalSubscriptions[idx];
-                if(content.type === 'content') {
-                    addContent(content);
-                } else if (content.type === null) {
-                    alert('none');
-                }
-            }
-        });
+    function (externalSubscriptions) {
+      for (var idx in externalSubscriptions) {
+        var content = externalSubscriptions[idx];
+        if (content.type === 'content') {
+          addContent(content);
+        } else if (content.type === null) {
+          alert('none');
+        }
+      }
+    },
+  );
 }
 
-
 (function () {
-
+  if (window.location.pathname === '/feed/subscriptions') {
     addExternalSubscriptionVideos();
-
+  }
+  document
+    .querySelector('a[title=Subscriptions]')
+    .addEventListener('click', function () {
+      addExternalSubscriptionVideos();
+    });
 })();
-
-// TODO fix
-// document.querySelector('a[title=Subscriptions]').onclick = addExternalSubscriptionVideos;
-
-// document.querySelector('a[title=Subscriptions]').addEventListener("click", function() {
-//     console.log('clickkk');
-//     addExternalSubscriptionVideos();
-// });
