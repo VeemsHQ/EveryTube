@@ -2,6 +2,10 @@ var PROVIDER_URLS = {
     bitchute: "https://www.bitchute.com",
     lbry: "https://api.lbry.tv/api/v1/proxy?m=claim_search",
 };
+var PROVIDER_LABELS = {
+    'bitchute': 'BitChute',
+    'lbry': 'lbry.tv',
+}
 var PROVIDER_DOMAINS = [
     new URL(PROVIDER_URLS["bitchute"]).host,
     new URL(PROVIDER_URLS["lbry"]).host,
@@ -66,7 +70,7 @@ function parseVideosFromBitchute(html_text) {
                 videoDuration: videoDuration,
                 videoViews: kFormatter(videoViews),
                 videoPublishedOn: videoPublishedOn,
-                provider: "bitchute",
+                provider: PROVIDER_LABELS["bitchute"],
             };
             if (videoPublishedOn.includes("1 day,") === true) {
                 videosPublishedYesterday.push(video);
@@ -192,7 +196,7 @@ function parseVideosFromLbry(items) {
                 videoDuration: videoDuration,
                 videoViews: "unknown",
                 videoPublishedOn: videoPublishedOn,
-                provider: "lbry",
+                provider: PROVIDER_LABELS["lbry"],
             };
             if (videoPublishedOn === '1 day ago') {
                 videosPublishedYesterday.push(video);
