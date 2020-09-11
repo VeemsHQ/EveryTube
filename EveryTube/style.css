@@ -66,6 +66,19 @@
     display: inline-block;
 }
 
+.inserted-video .lbry {
+    opacity: 1;
+    position: absolute;
+    bottom: 4px;
+    left: 4px;
+    padding: 2px;
+    background: #257761;
+    letter-spacing: 0.5px;
+    color: #fff;
+    border-radius: 2px;
+    display: inline-block;
+}
+
 .inserted-video a.channel-title:hover {
     color: var(--yt-endpoint-hover-color, var(--yt-spec-text-primary)) !important;
 }

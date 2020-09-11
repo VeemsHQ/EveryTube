@@ -27,6 +27,9 @@
     "permissions": [
         "https://www.youtube.com/feed/subscriptions*",
         "https://www.bitchute.com/",
+        "https://lbry.tv/",
+        "https://lbry.tv/$/following",
+        "https://api.lbry.tv/*",
         "cookies"
     ],
     "manifest_version": 2

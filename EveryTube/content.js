@@ -1,5 +1,5 @@
 
-var bitchuteVideoTmpl = `
+var videoTmpl = `
 <div class="inserted-video style-scope ytd-grid-video-renderer">
 
     <a id="thumbnail" class="yt-simple-endpoint inline-block style-scope ytd-thumbnail"
@@ -10,8 +10,8 @@ var bitchuteVideoTmpl = `
             <span class="style-scope video-duration ytd-thumbnail-overlay-time-status-renderer">
                 {videoDuration}
             </span>
-            <span class="style-scope ytd-thumbnail-overlay-time-status-renderer bitchute">
-            BitChute
+            <span class="style-scope ytd-thumbnail-overlay-time-status-renderer {provider}">
+            {provider}
         </span>
         </div>
 
@@ -66,11 +66,11 @@ function supplant (string, o) {
     );
 };
 
-function addBitchuteContent(externalSubscriptions) {
+function addContent(externalSubscriptions) {
     var todayVideos = externalSubscriptions.today;
     var newHtml = '<div class="external-content">';
     for(var idx in todayVideos) {
-        var videoHtml = supplant(bitchuteVideoTmpl, todayVideos[idx]);
+        var videoHtml = supplant(videoTmpl, todayVideos[idx]);
         newHtml = newHtml + videoHtml;
     }
     newHtml = newHtml + '</div>';
@@ -82,7 +82,7 @@ function addBitchuteContent(externalSubscriptions) {
     var yesterdayVideos = externalSubscriptions.yesterday;
     var newHtml = '<div class="external-content">';
     for(var idx in yesterdayVideos) {
-        var videoHtml = supplant(bitchuteVideoTmpl, yesterdayVideos[idx]);
+        var videoHtml = supplant(videoTmpl, yesterdayVideos[idx]);
         newHtml = newHtml + videoHtml;
     }
     newHtml = newHtml + '</div>';
@@ -94,7 +94,7 @@ function addBitchuteContent(externalSubscriptions) {
     var thisWeekVideos = externalSubscriptions.thisWeek;
     var newHtml = '<div class="external-content">';
     for(var idx in thisWeekVideos) {
-        var videoHtml = supplant(bitchuteVideoTmpl, thisWeekVideos[idx]);
+        var videoHtml = supplant(videoTmpl, thisWeekVideos[idx]);
         newHtml = newHtml + videoHtml;
     }
     newHtml = newHtml + '</div>';
@@ -111,11 +111,15 @@ function addBitchuteContent(externalSubscriptions) {
             type: 'UPDATE_THE_PAGE'
         },
             function (externalSubscriptions) {
+                console.log('externalSubscriptions:');
                 console.log(externalSubscriptions)
-                if(externalSubscriptions.type === 'bitchute_content') {
-                    addBitchuteContent(externalSubscriptions);
-                } else if (externalSubscriptions.type === null) {
-                    alert('none');
+                for (var idx in externalSubscriptions) {
+                    var content = externalSubscriptions[idx];
+                    if(content.type === 'content') {
+                        addContent(content);
+                    } else if (content.type === null) {
+                        alert('none');
+                    }
                 }
             });
     }
