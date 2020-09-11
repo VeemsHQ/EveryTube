@@ -400,6 +400,8 @@ async function fetchContentLbry(previousAllVideos) {
         console.log(err);
       });
     return allVideos;
+  } else {
+    return allVideos;
   }
 }
 
