@@ -73,7 +73,8 @@ function updateProviderLoginState() {
     var cookieName = PROVIDER_LOGIN_STATE_COOKIE['bitchute'];
     var cookieUrl = PROVIDER_URLS['bitchute'];
     chrome.cookies.get({"url": cookieUrl, "name": cookieName}, function(cookie) {
-        if (cookie) {
+        console.log(cookie);
+        if (cookie != null && cookie.value.length > 0) {
             PROVIDER_LOGGED_IN['bitchute'] = true;
         }
     });
@@ -99,10 +100,11 @@ function fetchRetry(url, delay, tries, fetchOptions = {}) {
     return fetch(url, fetchOptions).catch(onError);
 }
 
+updateProviderLoginState();
 
 chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
     if (msg.type = 'UPDATE_THE_PAGE') {
-        updateProviderLoginState();
+
         if(loggedInToBitchute() === true) {
             console.log('BitChute logged in, getting content');
             var url = PROVIDER_URLS['bitchute'];
