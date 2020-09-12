@@ -84,7 +84,8 @@ function isRendered(els) {
 
 function addContent(externalSubscriptions) {
   console.log('addContent called');
-  contentParentElementsReady('ytd-item-section-renderer #items').then((elements) => {
+  // contentParentElementsReady('ytd-item-section-renderer #items').then((elements) => {
+  contentParentElementsReady('ytd-shelf-renderer #contents').then((elements) => {
     // today
     var parent = elements[0];
     var todayVideos = externalSubscriptions.today;
@@ -123,29 +124,13 @@ function addContent(externalSubscriptions) {
     var div = document.createElement('div');
     div.innerHTML = newHtml.trim();
     parent.prepend(div.firstChild);
+
+    console.log('DONE INSERT');
   });
 
 }
 
 
-function addExternalSubscriptionVideos() {
-  console.log('addExternalSubscriptionVideos called');
-  chrome.runtime.sendMessage(
-    {
-      type: 'UPDATE_THE_PAGE',
-    },
-    function (externalSubscriptions) {
-      console.log('externalSubscriptions');
-      console.log(externalSubscriptions);
-      for (var idx in externalSubscriptions) {
-        var content = externalSubscriptions[idx];
-        if (content.type === 'content') {
-          addContent(content);
-        }
-      }
-    },
-  );
-}
 
 function contentParentElementsReady(selector) {
   return new Promise((resolve, reject) => {
@@ -205,9 +190,56 @@ function elementsReady(selector) {
 }
 
 
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+function requestUpdateFromBackend() {
+  console.log('addExternalSubscriptionVideos called');
+  chrome.runtime.sendMessage(
+    {
+      type: 'UPDATE_THE_PAGE',
+    },
+    function (externalSubscriptions) {
+      // document.querySelectorAll(".external-content").forEach(e => e.parentNode.removeChild(e));
+      render(externalSubscriptions);
+    },
+  );
+}
+
+
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+async function render(externalSubscriptions) {
+  console.log('transform');
+  var trans = document.querySelector('#progress')
+  console.log(trans)
+  while(trans && document.querySelector('#progress').style.transform != "scaleX(1)") {
+    console.log('scale not done');
+    await sleep(1000);
+  }
+  console.log('scale is done');
+
+  for (var idx in externalSubscriptions) {
+    var content = externalSubscriptions[idx];
+    if (content.type === 'content') {
+      addContent(content);
+    }
+  }
+}
+
+
+// elementReady('a[title=Subscriptions]').then((element) => {
+//   element.addEventListener('click', onClick);
+// });
+
+chrome.runtime.onMessage.addListener(async function (request, sender, sendResponse) {
+  console.log(request);
   if (request.type === 'on_subs_page') {
-    console.log('Currently on the subs page, triggering content update');
-    addExternalSubscriptionVideos();
+    console.log('Got onHistory msg from backend, rendering');
+    console.log(request.data);
+    await render(request.data);
   }
 });
+
+window.onload = function () {
+  requestUpdateFromBackend();
+}

@@ -388,8 +388,6 @@ async function fetchContentLbry(previousAllVideos) {
           'hentai',
         ],
         order_by: ['release_time'],
-        // "release_time": "<" + parseInt(new Date().getTime()/1000).toString(),
-        // "release_time": "<1599832740",
         release_time: releaseTimeQuery,
         fee_amount: '>=0',
         include_purchase_receipt: true,
@@ -424,6 +422,7 @@ function getFromCache() {
       var cache = items[CACHE_KEY];
       if (cache != null && cache.cacheTime > Date.now() - CACHE_MAX) {
         console.log('Cache hit')
+        console.log(cache);
         resolve(cache);
       } else {
         console.log('No cache hit');
@@ -466,10 +465,31 @@ chrome.cookies.onChanged.addListener(function (cookies) {
   }
 });
 
+
+function _sendResponse(data) {
+  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    console.log('tag');
+    console.log(tabs);
+    console.log(tabs[0]);
+    console.log('History changed, sent data to content.js');
+    chrome.tabs.sendMessage(tabs[0].id, { type: "on_subs_page", data: data });
+  });
+}
+
 chrome.history.onVisited.addListener(function (result) {
   if (result.url.includes("https://www.youtube.com/feed/subscriptions") === true) {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      chrome.tabs.sendMessage(tabs[0].id, { type: "on_subs_page" });
-    });
+    fetchContentBitchute()
+      .then((res) => fetchContentLbry(res))
+      .then((res) => setCacheAndSendResponse(res, _sendResponse))
   }
 });
+
+// chrome.tabs.onUpdated.addListener( function (tabId, changeInfo, tab) {
+//   if (changeInfo.status == 'complete' && tab.url.includes("https://www.youtube.com/feed/subscriptions")) {
+//     console.log('########### tab loaded');
+//     fetchContentBitchute()
+//       .then((res) => fetchContentLbry(res))
+//       .then((res) => setCacheAndSendResponse(res, _sendResponse))
+//     // chrome.tabs.sendMessage(tab.id, {"message": "create_overtime"});
+//   }
+// });
