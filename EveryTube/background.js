@@ -315,8 +315,6 @@ async function fetchContentBitchute() {
 
 async function fetchContentLbry(previousAllVideos) {
   var cached = await getFromCache();
-  console.log(1);
-  console.log(cached);
 
   if (cached) {
     return cached;
@@ -429,7 +427,6 @@ function getFromCache() {
         resolve(cache);
       } else {
         console.log('No cache hit');
-        console.log(cache);
         resolve(null);
       }
     });
@@ -443,8 +440,6 @@ async function setCacheAndSendResponse(data, callback) {
     var cacheTime =  Date.now()
     chrome.storage.local.set({ CACHE_KEY: { cache: data, cacheTime: cacheTime } }, function () {
       console.log('Set cache');
-      console.log(data);
-      console.log(cacheTime);
       return callback(data);
 
     });
