@@ -420,7 +420,7 @@ async function fetchContentLbry(previousAllVideos) {
 
 function getFromCache() {
   return new Promise(resolve => {
-    chrome.storage.local.get(CACHE_KEY, function (items) {
+    chrome.storage.local.get([CACHE_KEY], function (items) {
       var cache = items[CACHE_KEY];
       if (cache != null && cache.cacheTime > Date.now() - CACHE_MAX) {
         console.log('Cache hit')
@@ -435,16 +435,15 @@ function getFromCache() {
 
 async function setCacheAndSendResponse(data, callback) {
   var cached = await getFromCache();
-
   if (cached == null) {
     var cacheTime =  Date.now()
-    chrome.storage.local.set({ CACHE_KEY: { cache: data, cacheTime: cacheTime } }, function () {
+    chrome.storage.local.set({ [CACHE_KEY]: { cache: data, cacheTime: cacheTime } }, function () {
       console.log('Set cache');
+      console.log(cacheTime);
       return callback(data);
-
     });
   } else {
-    return callback(cached);
+    return callback(cached.cache);
   }
 }
 

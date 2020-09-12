@@ -83,6 +83,7 @@ function isRendered(els) {
 }
 
 function addContent(externalSubscriptions) {
+  console.log('addContent called');
   contentParentElementsReady('ytd-item-section-renderer #items').then((elements) => {
     // today
     var parent = elements[0];
@@ -128,11 +129,14 @@ function addContent(externalSubscriptions) {
 
 
 function addExternalSubscriptionVideos() {
+  console.log('addExternalSubscriptionVideos called');
   chrome.runtime.sendMessage(
     {
       type: 'UPDATE_THE_PAGE',
     },
     function (externalSubscriptions) {
+      console.log('externalSubscriptions');
+      console.log(externalSubscriptions);
       for (var idx in externalSubscriptions) {
         var content = externalSubscriptions[idx];
         if (content.type === 'content') {
@@ -146,11 +150,13 @@ function addExternalSubscriptionVideos() {
 function contentParentElementsReady(selector) {
   return new Promise((resolve, reject) => {
     var elements = isRendered(document.querySelectorAll(selector));
-    if (elements.length === 3) {
+    console.log(elements.length);
+    if (elements.length >= 3) {
       resolve(elements);
     }
     new MutationObserver((mutationRecords, observer) => {
       var els = isRendered(document.querySelectorAll(selector));
+      console.log(els.length);
       if (els.length === 3) {
         resolve(els);
         observer.disconnect();
