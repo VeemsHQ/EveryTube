@@ -64,29 +64,27 @@ function supplant(string, o) {
 }
 
 
-function inViewport(els) {
+function isRendered(els) {
   let matches = [],
-      elCt = els.length;
+    elCt = els.length;
 
-  for (let i=0; i<elCt; ++i) {
-      let el = els[i],
-          b = el.getBoundingClientRect(), c;
+  for (let i = 0; i < elCt; ++i) {
+    let el = els[i],
+      b = el.getBoundingClientRect(), c;
 
-      if  (b.width > 0 && b.height > 0 &&
-          // b.left+b.width > 0 && b.right-b.width < window.outerWidth &&
-          // b.top+b.height > 0 && b.bottom-b.width < window.outerHeight &&
-          (c = window.getComputedStyle(el)) &&
-          c.getPropertyValue('visibility') === 'visible' &&
-          c.getPropertyValue('opacity') !== 'none') {
-          matches.push(el);
-      }
+    if (b.width > 0 && b.height > 0 &&
+      (c = window.getComputedStyle(el)) &&
+      c.getPropertyValue('visibility') === 'visible' &&
+      c.getPropertyValue('opacity') !== 'none') {
+      matches.push(el);
+    }
   }
   return matches;
 }
 
 function addContent(externalSubscriptions) {
   console.log('addContent called');
-  elementsReady('ytd-item-section-renderer #items').then((elements) => {
+  contentParentElementsReady('ytd-item-section-renderer #items').then((elements) => {
     // today
     var parent = elements[0];
     var todayVideos = externalSubscriptions.today;
@@ -149,24 +147,20 @@ function addExternalSubscriptionVideos() {
   );
 }
 
-function elementsReady(selector) {
+function contentParentElementsReady(selector) {
   return new Promise((resolve, reject) => {
-    const elements = inViewport(document.querySelectorAll(selector));
+    var elements = isRendered(document.querySelectorAll(selector));
     console.log(elements.length);
     if (elements.length === 3) {
       resolve(elements);
     }
     new MutationObserver((mutationRecords, observer) => {
-      var elements2 = inViewport(document.querySelectorAll(selector));
-      console.log(elements2.length);
-      if (elements2.length === 3) {
-        resolve(elements2);
+      var els = isRendered(document.querySelectorAll(selector));
+      console.log(els.length);
+      if (els.length === 3) {
+        resolve(els);
         observer.disconnect();
       }
-      // Array.from(document.querySelectorAll(selector)).forEach((element, idx) => {
-      //   resolve([idx, element]);
-      //   observer.disconnect();
-      // });
     })
       .observe(document.documentElement, {
         childList: true,
@@ -177,7 +171,7 @@ function elementsReady(selector) {
 
 function elementReady(selector) {
   return new Promise((resolve, reject) => {
-    const el = document.querySelector(selector);
+    var el = document.querySelector(selector);
     if (el) { resolve(el); }
     new MutationObserver((mutationRecords, observer) => {
       Array.from(document.querySelectorAll(selector)).forEach((element) => {
@@ -192,17 +186,13 @@ function elementReady(selector) {
   });
 }
 
-function onClickHandler() {
-  addExternalSubscriptionVideos();
-  // setTimeout(() => { addExternalSubscriptionVideos() }, 2000);
-}
 
 function onContentLoaded() {
   if (window.location.pathname.includes('/feed/subscriptions') === true) {
     addExternalSubscriptionVideos();
   }
   elementReady('a[title=Subscriptions]').then((element) => {
-    element.addEventListener('click', onClickHandler);
+    element.addEventListener('click', addExternalSubscriptionVideos);
   });
 }
 
