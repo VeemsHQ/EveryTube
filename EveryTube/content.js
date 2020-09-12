@@ -157,7 +157,7 @@ function contentParentElementsReady(selector) {
     new MutationObserver((mutationRecords, observer) => {
       var els = isRendered(document.querySelectorAll(selector));
       console.log(els.length);
-      if (els.length === 3) {
+      if (els.length >= 3) {
         resolve(els);
         observer.disconnect();
       }
