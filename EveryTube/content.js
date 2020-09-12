@@ -70,7 +70,8 @@ function isRendered(els) {
 
   for (let i = 0; i < elCt; ++i) {
     let el = els[i],
-      b = el.getBoundingClientRect(), c;
+      b = el.getBoundingClientRect(),
+      c;
 
     if (b.width > 0 && b.height > 0 &&
       (c = window.getComputedStyle(el)) &&
@@ -124,8 +125,6 @@ function addContent(externalSubscriptions) {
     var div = document.createElement('div');
     div.innerHTML = newHtml.trim();
     parent.prepend(div.firstChild);
-
-    console.log('DONE INSERT');
   });
 
 }
@@ -135,17 +134,17 @@ function addContent(externalSubscriptions) {
 function contentParentElementsReady(selector) {
   return new Promise((resolve, reject) => {
     var elements = isRendered(document.querySelectorAll(selector));
-    console.log(elements.length);
-    if (elements.length >= 3) {
-      resolve(elements);
-    }
+    // console.log(elements.length);
+    // if (elements.length >= 3) {
+    resolve(elements);
+    // }
     new MutationObserver((mutationRecords, observer) => {
       var els = isRendered(document.querySelectorAll(selector));
-      console.log(els.length);
-      if (els.length >= 3) {
-        resolve(els);
-        observer.disconnect();
-      }
+      // console.log(els.length);
+      // if (els.length >= 3) {
+      resolve(els);
+      observer.disconnect();
+      // }
     })
       .observe(document.documentElement, {
         childList: true,
@@ -157,7 +156,9 @@ function contentParentElementsReady(selector) {
 function elementReady(selector) {
   return new Promise((resolve, reject) => {
     var el = document.querySelector(selector);
-    if (el) { resolve(el); }
+    if (el) {
+      resolve(el);
+    }
     new MutationObserver((mutationRecords, observer) => {
       Array.from(document.querySelectorAll(selector)).forEach((element) => {
         resolve(element);
@@ -174,7 +175,9 @@ function elementReady(selector) {
 function elementsReady(selector) {
   return new Promise((resolve, reject) => {
     var els = document.querySelectorAll(selector);
-    if (els) { resolve(els); }
+    if (els) {
+      resolve(els);
+    }
     new MutationObserver((mutationRecords, observer) => {
       var els = document.querySelectorAll(selector)
       if (els) {
@@ -192,32 +195,30 @@ function elementsReady(selector) {
 
 function requestUpdateFromBackend() {
   console.log('addExternalSubscriptionVideos called');
-  chrome.runtime.sendMessage(
-    {
-      type: 'UPDATE_THE_PAGE',
-    },
+  chrome.runtime.sendMessage({
+    type: 'UPDATE_THE_PAGE',
+  },
     function (externalSubscriptions) {
-      // document.querySelectorAll(".external-content").forEach(e => e.parentNode.removeChild(e));
       render(externalSubscriptions);
     },
   );
 }
 
 
-
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+
 async function render(externalSubscriptions) {
-  console.log('transform');
-  var trans = document.querySelector('#progress')
-  console.log(trans)
-  while(trans && document.querySelector('#progress').style.transform != "scaleX(1)") {
-    console.log('scale not done');
+  var progress = document.querySelector('#progress');
+  while (progress && document.querySelector('#progress').style.transform != "scaleX(1)") {
+    console.log('Progress bar not finished');
     await sleep(1000);
   }
-  console.log('scale is done');
+  console.log('Progress bar finished');
 
+  document.querySelectorAll(".external-content").forEach(e => e.remove());
   for (var idx in externalSubscriptions) {
     var content = externalSubscriptions[idx];
     if (content.type === 'content') {
@@ -226,15 +227,10 @@ async function render(externalSubscriptions) {
   }
 }
 
-
-// elementReady('a[title=Subscriptions]').then((element) => {
-//   element.addEventListener('click', onClick);
-// });
-
 chrome.runtime.onMessage.addListener(async function (request, sender, sendResponse) {
   console.log(request);
-  if (request.type === 'on_subs_page') {
-    console.log('Got onHistory msg from backend, rendering');
+  if (request.type === 'ON_SUBS_PAGE') {
+    console.log('ON_SUBS_PAGE>>>>>>>>>>>.');
     console.log(request.data);
     await render(request.data);
   }

@@ -25,9 +25,10 @@ var CACHE_MAX = 60000 * 10; // 10 mins
 var CACHE_KEY = 'everytubecache';
 
 function isElement(o) {
-  return typeof HTMLElement === 'object'
-    ? o instanceof HTMLElement //DOM2
-    : o &&
+  return typeof HTMLElement === 'object' ?
+    o instanceof HTMLElement //DOM2
+    :
+    o &&
     typeof o === 'object' &&
     o !== null &&
     o.nodeType === 1 &&
@@ -35,9 +36,9 @@ function isElement(o) {
 }
 
 function kFormatter(num) {
-  return Math.abs(num) > 999
-    ? Math.sign(num) * (Math.abs(num) / 1000).toFixed(1) + 'k'
-    : Math.sign(num) * Math.abs(num);
+  return Math.abs(num) > 999 ?
+    Math.sign(num) * (Math.abs(num) / 1000).toFixed(1) + 'k' :
+    Math.sign(num) * Math.abs(num);
 }
 
 function parseVideosFromBitchute(html_text) {
@@ -96,42 +97,41 @@ function parseVideosFromBitchute(html_text) {
 }
 
 function timeAgo(time) {
-  var units = [
-    {
-      name: 'second',
-      limit: 60,
-      in_seconds: 1,
-    },
-    {
-      name: 'minute',
-      limit: 3600,
-      in_seconds: 60,
-    },
-    {
-      name: 'hour',
-      limit: 86400,
-      in_seconds: 3600,
-    },
-    {
-      name: 'day',
-      limit: 604800,
-      in_seconds: 86400,
-    },
-    {
-      name: 'week',
-      limit: 2629743,
-      in_seconds: 604800,
-    },
-    {
-      name: 'month',
-      limit: 31556926,
-      in_seconds: 2629743,
-    },
-    {
-      name: 'year',
-      limit: null,
-      in_seconds: 31556926,
-    },
+  var units = [{
+    name: 'second',
+    limit: 60,
+    in_seconds: 1,
+  },
+  {
+    name: 'minute',
+    limit: 3600,
+    in_seconds: 60,
+  },
+  {
+    name: 'hour',
+    limit: 86400,
+    in_seconds: 3600,
+  },
+  {
+    name: 'day',
+    limit: 604800,
+    in_seconds: 86400,
+  },
+  {
+    name: 'week',
+    limit: 2629743,
+    in_seconds: 604800,
+  },
+  {
+    name: 'month',
+    limit: 31556926,
+    in_seconds: 2629743,
+  },
+  {
+    name: 'year',
+    limit: null,
+    in_seconds: 31556926,
+  },
   ];
   var diff = (new Date() - new Date(time * 1000)) / 1000;
   if (diff < 5) return 'now';
@@ -232,11 +232,10 @@ function updateProviderLoginState() {
   PROVIDER_LOGGED_IN['bitchute'] = false;
   var cookieName = PROVIDER_LOGIN_STATE_COOKIE['bitchute'];
   var cookieUrl = PROVIDER_URLS['bitchute'];
-  chrome.cookies.get(
-    {
-      url: cookieUrl,
-      name: cookieName,
-    },
+  chrome.cookies.get({
+    url: cookieUrl,
+    name: cookieName,
+  },
     function (cookie) {
       if (cookie != null && cookie.value.length > 0) {
         PROVIDER_LOGGED_IN['bitchute'] = true;
@@ -247,11 +246,10 @@ function updateProviderLoginState() {
   PROVIDER_LOGGED_IN['lbry'] = false;
   var cookieName = PROVIDER_LOGIN_STATE_COOKIE['lbry'];
   var cookieUrl = PROVIDER_URLS['lbry'];
-  chrome.cookies.get(
-    {
-      url: cookieUrl,
-      name: cookieName,
-    },
+  chrome.cookies.get({
+    url: cookieUrl,
+    name: cookieName,
+  },
     function (cookie) {
       if (cookie != null && cookie.value.length > 0) {
         LBRY_AUTH_TOKEN = cookie.value;
@@ -340,11 +338,10 @@ async function fetchContentLbry(previousAllVideos) {
     var channelClaimIds = await fetchRetry(
       PROVIDER_URLS['lbry_subs_list'] + LBRY_AUTH_TOKEN,
       0.2,
-      5,
-      {
-        method: 'GET',
-        credentials: 'include',
-      },
+      5, {
+      method: 'GET',
+      credentials: 'include',
+    },
     )
       .then((response) => response.json())
       .then(function (json_data) {
@@ -436,7 +433,12 @@ async function setCacheAndSendResponse(data, callback) {
   var cached = await getFromCache();
   if (cached == null) {
     var cacheTime = Date.now()
-    chrome.storage.local.set({ [CACHE_KEY]: { cache: data, cacheTime: cacheTime } }, function () {
+    chrome.storage.local.set({
+      [CACHE_KEY]: {
+        cache: data,
+        cacheTime: cacheTime
+      }
+    }, function () {
       console.log('Set cache');
       console.log(cacheTime);
       return callback(data);
@@ -467,12 +469,15 @@ chrome.cookies.onChanged.addListener(function (cookies) {
 
 
 function _sendResponse(data) {
-  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    console.log('tag');
-    console.log(tabs);
-    console.log(tabs[0]);
+  chrome.tabs.query({
+    active: true,
+    currentWindow: true
+  }, function (tabs) {
     console.log('History changed, sent data to content.js');
-    chrome.tabs.sendMessage(tabs[0].id, { type: "on_subs_page", data: data });
+    chrome.tabs.sendMessage(tabs[0].id, {
+      type: "ON_SUBS_PAGE",
+      data: data
+    });
   });
 }
 
@@ -483,13 +488,3 @@ chrome.history.onVisited.addListener(function (result) {
       .then((res) => setCacheAndSendResponse(res, _sendResponse))
   }
 });
-
-// chrome.tabs.onUpdated.addListener( function (tabId, changeInfo, tab) {
-//   if (changeInfo.status == 'complete' && tab.url.includes("https://www.youtube.com/feed/subscriptions")) {
-//     console.log('########### tab loaded');
-//     fetchContentBitchute()
-//       .then((res) => fetchContentLbry(res))
-//       .then((res) => setCacheAndSendResponse(res, _sendResponse))
-//     // chrome.tabs.sendMessage(tab.id, {"message": "create_overtime"});
-//   }
-// });
