@@ -205,11 +205,9 @@ function elementsReady(selector) {
 }
 
 
-chrome.runtime.onMessage.addListener(
-  function (request, sender, sendResponse) {
-    if (request.type === "on_subs_page") {
-      console.log('Currently on the subs page, triggering content update');
-      addExternalSubscriptionVideos();
-    }
-
-  });
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+  if (request.type === 'on_subs_page') {
+    console.log('Currently on the subs page, triggering content update');
+    addExternalSubscriptionVideos();
+  }
+});
