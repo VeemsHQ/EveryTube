@@ -22,7 +22,7 @@ var PROVIDER_LOGGED_IN = {
 };
 var LBRY_AUTH_TOKEN = null;
 var CACHE_MAX = 60000 * 10; // 10 mins
-var CACHE_KEY = 'everytube_cache';
+var CACHE_KEY = 'everytubecache';
 
 function isElement(o) {
   return typeof HTMLElement === 'object'
@@ -422,25 +422,31 @@ async function fetchContentLbry(previousAllVideos) {
 
 function getFromCache() {
   return new Promise(resolve => {
-    chrome.storage.local.get([CACHE_KEY], function (items) {
-      if (items.everytube_cache && items.everytube_cache.cache && items.everytube_cache.cacheTime) {
-        if (items.everytube_cache.cacheTime > Date.now() - CACHE_MAX) {
-          console.log('Cache hit')
-          resolve(items.everytube_cache.cache);
-        }
+    chrome.storage.local.get(CACHE_KEY, function (items) {
+      var cache = items[CACHE_KEY];
+      if (cache != null && cache.cacheTime > Date.now() - CACHE_MAX) {
+        console.log('Cache hit')
+        resolve(cache);
+      } else {
+        console.log('No cache hit');
+        console.log(cache);
+        resolve(null);
       }
-      console.log('No cache hit');
-      resolve(null);
     });
   })
 }
 
 async function setCacheAndSendResponse(data, callback) {
   var cached = await getFromCache();
-  if (!cached) {
-    chrome.storage.local.set({ CACHE_KEY: { cache: data, cacheTime: Date.now() } }, function () {
+
+  if (cached == null) {
+    var cacheTime =  Date.now()
+    chrome.storage.local.set({ CACHE_KEY: { cache: data, cacheTime: cacheTime } }, function () {
       console.log('Set cache');
+      console.log(data);
+      console.log(cacheTime);
       return callback(data);
+
     });
   } else {
     return callback(cached);
