@@ -13,7 +13,7 @@
     "content_scripts": [
         {
             "matches": [
-                "https://www.youtube.com/*"
+                "https://*.youtube.com/*"
             ],
             "css": [
                 "style.css"
@@ -21,7 +21,7 @@
             "js": [
                 "content.js"
             ],
-            "run_at": "document_end"
+            "run_at": "document_start"
         }
     ],
     "permissions": [
@@ -32,6 +32,7 @@
         "https://api.lbry.tv/*",
         "https://api.lbry.com/*",
         "cookies",
+        "unlimitedStorage",
         "storage"
     ],
     "manifest_version": 2

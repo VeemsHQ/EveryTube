@@ -21,7 +21,8 @@ var PROVIDER_LOGGED_IN = {
   lbry: false,
 };
 var LBRY_AUTH_TOKEN = null;
-var CACHE_MAX = 60000 * 10;
+var CACHE_MAX = 60000 * 10; // 10 mins
+var CACHE_KEY = 'everytube_cache';
 
 function isElement(o) {
   return typeof HTMLElement === 'object'
@@ -289,7 +290,7 @@ updateProviderLoginState();
 
 async function fetchContentBitchute() {
   var cached = await getFromCache();
-  if(cached) {
+  if (cached) {
     return cached;
   }
   var allVideos = [];
@@ -317,7 +318,7 @@ async function fetchContentLbry(previousAllVideos) {
   console.log(1);
   console.log(cached);
 
-  if(cached) {
+  if (cached) {
     return cached;
   }
   var allVideos = [];
@@ -421,8 +422,8 @@ async function fetchContentLbry(previousAllVideos) {
 
 function getFromCache() {
   return new Promise(resolve => {
-    chrome.storage.local.get(['everytube_cache'], function (items) {
-      if (items.everytube_cache.cache && items.everytube_cache.cacheTime) {
+    chrome.storage.local.get([CACHE_KEY], function (items) {
+      if (items.everytube_cache && items.everytube_cache.cache && items.everytube_cache.cacheTime) {
         if (items.everytube_cache.cacheTime > Date.now() - CACHE_MAX) {
           console.log('Cache hit')
           resolve(items.everytube_cache.cache);
@@ -434,15 +435,15 @@ function getFromCache() {
   })
 }
 
-async function setCache(data) {
+async function setCacheAndSendResponse(data, callback) {
   var cached = await getFromCache();
-  if(cached) {
-    return cached;
-  } else {
-    chrome.storage.local.set({'everytube_cache': { cache: data, cacheTime: Date.now() }}, function () {
+  if (!cached) {
+    chrome.storage.local.set({ CACHE_KEY: { cache: data, cacheTime: Date.now() } }, function () {
       console.log('Set cache');
-      return data;
+      return callback(data);
     });
+  } else {
+    return callback(cached);
   }
 }
 
@@ -451,8 +452,7 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
   if ((msg.type = 'UPDATE_THE_PAGE')) {
     fetchContentBitchute()
       .then((res) => fetchContentLbry(res))
-      .then((res) => setCache(res))
-      .then((res) => sendResponse(res));
+      .then((res) => setCacheAndSendResponse(res, sendResponse))
   }
   return true;
 });

@@ -63,8 +63,29 @@ function supplant(string, o) {
   });
 }
 
-function addContent(externalSubscriptions) {
 
+function inViewport(els) {
+  let matches = [],
+      elCt = els.length;
+
+  for (let i=0; i<elCt; ++i) {
+      let el = els[i],
+          b = el.getBoundingClientRect(), c;
+
+      if  (b.width > 0 && b.height > 0 &&
+          // b.left+b.width > 0 && b.right-b.width < window.outerWidth &&
+          // b.top+b.height > 0 && b.bottom-b.width < window.outerHeight &&
+          (c = window.getComputedStyle(el)) &&
+          c.getPropertyValue('visibility') === 'visible' &&
+          c.getPropertyValue('opacity') !== 'none') {
+          matches.push(el);
+      }
+  }
+  return matches;
+}
+
+function addContent(externalSubscriptions) {
+  console.log('addContent called');
   elementsReady('ytd-item-section-renderer #items').then((elements) => {
     // today
     var parent = elements[0];
@@ -110,11 +131,14 @@ function addContent(externalSubscriptions) {
 
 
 function addExternalSubscriptionVideos() {
+  console.log('addExternalSubscriptionVideos called');
   chrome.runtime.sendMessage(
     {
       type: 'UPDATE_THE_PAGE',
     },
     function (externalSubscriptions) {
+      console.log('videos');
+      console.log(externalSubscriptions);
       for (var idx in externalSubscriptions) {
         var content = externalSubscriptions[idx];
         if (content.type === 'content') {
@@ -127,13 +151,22 @@ function addExternalSubscriptionVideos() {
 
 function elementsReady(selector) {
   return new Promise((resolve, reject) => {
-    const el = document.querySelectorAll(selector);
-    if (el) { resolve(el); }
+    const elements = inViewport(document.querySelectorAll(selector));
+    console.log(elements.length);
+    if (elements.length === 3) {
+      resolve(elements);
+    }
     new MutationObserver((mutationRecords, observer) => {
-      Array.from(document.querySelectorAll(selector)).forEach((element) => {
-        resolve(element);
+      var elements2 = inViewport(document.querySelectorAll(selector));
+      console.log(elements2.length);
+      if (elements2.length === 3) {
+        resolve(elements2);
         observer.disconnect();
-      });
+      }
+      // Array.from(document.querySelectorAll(selector)).forEach((element, idx) => {
+      //   resolve([idx, element]);
+      //   observer.disconnect();
+      // });
     })
       .observe(document.documentElement, {
         childList: true,
@@ -160,16 +193,20 @@ function elementReady(selector) {
 }
 
 function onClickHandler() {
-  setTimeout(() => {  addExternalSubscriptionVideos() }, 2000);
+  addExternalSubscriptionVideos();
+  // setTimeout(() => { addExternalSubscriptionVideos() }, 2000);
 }
 
-
-(function () {
-  if (window.location.pathname === '/feed/subscriptions') {
+function onContentLoaded() {
+  if (window.location.pathname.includes('/feed/subscriptions') === true) {
     addExternalSubscriptionVideos();
   }
   elementReady('a[title=Subscriptions]').then((element) => {
     element.addEventListener('click', onClickHandler);
   });
+}
 
-})();
+
+
+document.addEventListener('DOMContentLoaded', onContentLoaded, false);
+
