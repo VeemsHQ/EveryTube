@@ -436,7 +436,7 @@ function getFromCache() {
 async function setCacheAndSendResponse(data, callback) {
   var cached = await getFromCache();
   if (cached == null) {
-    var cacheTime =  Date.now()
+    var cacheTime = Date.now()
     chrome.storage.local.set({ [CACHE_KEY]: { cache: data, cacheTime: cacheTime } }, function () {
       console.log('Set cache');
       console.log(cacheTime);
@@ -463,5 +463,13 @@ chrome.cookies.onChanged.addListener(function (cookies) {
     cookies.cookie.name === 'sessionid'
   ) {
     updateProviderLoginState();
+  }
+});
+
+chrome.history.onVisited.addListener(function (result) {
+  if (result.url.includes("https://www.youtube.com/feed/subscriptions") === true) {
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      chrome.tabs.sendMessage(tabs[0].id, { type: "on_subs_page" });
+    });
   }
 });

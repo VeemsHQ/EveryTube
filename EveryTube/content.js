@@ -205,34 +205,11 @@ function elementsReady(selector) {
 }
 
 
-function onGuideButtonClick() {
-  elementsReady('a[href="/feed/subscriptions"]').then((elements) => {
-    Array.from(elements).forEach((element) => {
-      element.addEventListener('click', addExternalSubscriptionVideos);
-    });
+chrome.runtime.onMessage.addListener(
+  function (request, sender, sendResponse) {
+    if (request.type === "on_subs_page") {
+      console.log('Currently on the subs page, triggering content update');
+      addExternalSubscriptionVideos();
+    }
+
   });
-}
-
-
-
-
-function onContentLoaded() {
-  if (window.location.pathname.includes('/feed/subscriptions') === true) {
-    addExternalSubscriptionVideos();
-  }
-
-  var guideBtn = document.querySelector('#guide-button');
-  guideBtn.addEventListener('click', onGuideButtonClick);
-
-  elementsReady('a[href="/feed/subscriptions"]').then((elements) => {
-    Array.from(elements).forEach((element) => {
-      element.addEventListener('click', addExternalSubscriptionVideos);
-    });
-  });
-
-}
-
-
-
-document.addEventListener('DOMContentLoaded', onContentLoaded, false);
-

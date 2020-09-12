@@ -33,6 +33,8 @@
         "https://api.lbry.com/*",
         "cookies",
         "unlimitedStorage",
+        "tabs",
+        "history",
         "storage"
     ],
     "manifest_version": 2
