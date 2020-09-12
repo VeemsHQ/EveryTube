@@ -186,14 +186,50 @@ function elementReady(selector) {
   });
 }
 
+function elementsReady(selector) {
+  return new Promise((resolve, reject) => {
+    var els = document.querySelectorAll(selector);
+    if (els) { resolve(els); }
+    new MutationObserver((mutationRecords, observer) => {
+      var els = document.querySelectorAll(selector)
+      if (els) {
+        resolve(els);
+        observer.disconnect();
+      }
+    })
+      .observe(document.documentElement, {
+        childList: true,
+        subtree: true
+      });
+  });
+}
+
+
+function onGuideButtonClick() {
+  elementsReady('a[href="/feed/subscriptions"]').then((elements) => {
+    Array.from(elements).forEach((element) => {
+      element.addEventListener('click', addExternalSubscriptionVideos);
+    });
+  });
+}
+
+
+
 
 function onContentLoaded() {
   if (window.location.pathname.includes('/feed/subscriptions') === true) {
     addExternalSubscriptionVideos();
   }
-  elementReady('a[title=Subscriptions]').then((element) => {
-    element.addEventListener('click', addExternalSubscriptionVideos);
+
+  var guideBtn = document.querySelector('#guide-button');
+  guideBtn.addEventListener('click', onGuideButtonClick);
+
+  elementsReady('a[href="/feed/subscriptions"]').then((elements) => {
+    Array.from(elements).forEach((element) => {
+      element.addEventListener('click', addExternalSubscriptionVideos);
+    });
   });
+
 }
 
 
