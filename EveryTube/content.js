@@ -228,14 +228,13 @@ async function render(externalSubscriptions) {
 }
 
 chrome.runtime.onMessage.addListener(async function (request, sender, sendResponse) {
-  console.log(request);
   if (request.type === 'ON_SUBS_PAGE') {
-    console.log('ON_SUBS_PAGE>>>>>>>>>>>.');
-    console.log(request.data);
     await render(request.data);
   }
 });
 
 window.onload = function () {
-  requestUpdateFromBackend();
+  if (window.location.href.includes("/feed/subscriptions") === true) {
+    requestUpdateFromBackend();
+  }
 }

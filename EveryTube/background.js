@@ -473,11 +473,13 @@ function _sendResponse(data) {
     active: true,
     currentWindow: true
   }, function (tabs) {
-    console.log('History changed, sent data to content.js');
-    chrome.tabs.sendMessage(tabs[0].id, {
-      type: "ON_SUBS_PAGE",
-      data: data
-    });
+    if (tabs) {
+      console.log('History changed, sent data to content.js');
+      chrome.tabs.sendMessage(tabs[0].id, {
+        type: "ON_SUBS_PAGE",
+        data: data
+      });
+    }
   });
 }
 
