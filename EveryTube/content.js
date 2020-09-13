@@ -135,16 +135,16 @@ function contentParentElementsReady(selector) {
   return new Promise((resolve, reject) => {
     var elements = isRendered(document.querySelectorAll(selector));
     // console.log(elements.length);
-    // if (elements.length >= 3) {
-    resolve(elements);
-    // }
+    if (elements.length >= 3) {
+      resolve(elements);
+    }
     new MutationObserver((mutationRecords, observer) => {
       var els = isRendered(document.querySelectorAll(selector));
       // console.log(els.length);
-      // if (els.length >= 3) {
-      resolve(els);
-      observer.disconnect();
-      // }
+      if (els.length >= 3) {
+        resolve(els);
+        observer.disconnect();
+      }
     })
       .observe(document.documentElement, {
         childList: true,
