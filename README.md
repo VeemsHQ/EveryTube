@@ -2,7 +2,7 @@
 
 EveryTube populates your YouTube Subscriptions page with content from other video platforms.
 
-Currently supports Bitchute, lbry.tv, more coming coon.
+Currently supports Bitchute and lbry.tv.
 
 ## Installation
 
