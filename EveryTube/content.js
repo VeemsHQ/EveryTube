@@ -189,7 +189,7 @@ function elementsReady(selector) {
 }
 
 function requestUpdateFromBackend() {
-  console.log('addExternalSubscriptionVideos called');
+  console.log('requestUpdateFromBackend called');
   chrome.runtime.sendMessage(
     {
       type: 'UPDATE_THE_PAGE',
@@ -205,11 +205,11 @@ function sleep(ms) {
 }
 
 async function render(externalSubscriptions) {
-  var progress = document.querySelector('#progress');
+  var selector = 'yt-page-navigation-progress';
   while (
-    progress &&
-    document.querySelector('#progress').style.transform != 'scaleX(1)' &&
-    document.querySelector('#progress').style.transform != ''
+    document.querySelector(selector) != null &&
+    document.querySelector(selector).style.transform != 'scaleX(1)' &&
+    document.querySelector(selector).style.transform
   ) {
     console.log('Progress bar not finished');
     await sleep(1000);
