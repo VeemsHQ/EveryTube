@@ -21,7 +21,7 @@ var PROVIDER_LOGGED_IN = {
   lbry: false,
 };
 var LBRY_AUTH_TOKEN = null;
-var CACHE_MAX = 60000 * 10; // 10 mins
+var CACHE_MAX = 60000 * 5; // 5 mins
 var CACHE_KEY = 'everytubecache';
 
 function isElement(o) {
