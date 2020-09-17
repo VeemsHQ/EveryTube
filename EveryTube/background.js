@@ -362,7 +362,9 @@ async function fetchContentLbry(previousAllVideos) {
         }
         return ids;
       });
-
+    if(channelClaimIds.length == 0) {
+      return allVideos;
+    }
     var req = {
       jsonrpc: '2.0',
       method: 'claim_search',
