@@ -63,7 +63,6 @@ function supplant(string, o) {
   });
 }
 
-
 function isRendered(els) {
   let matches = [],
     elCt = els.length;
@@ -73,10 +72,13 @@ function isRendered(els) {
       b = el.getBoundingClientRect(),
       c;
 
-    if (b.width > 0 && b.height > 0 &&
+    if (
+      b.width > 0 &&
+      b.height > 0 &&
       (c = window.getComputedStyle(el)) &&
       c.getPropertyValue('visibility') === 'visible' &&
-      c.getPropertyValue('opacity') !== 'none') {
+      c.getPropertyValue('opacity') !== 'none'
+    ) {
       matches.push(el);
     }
   }
@@ -86,50 +88,49 @@ function isRendered(els) {
 function addContent(externalSubscriptions) {
   console.log('addContent called');
   // contentParentElementsReady('ytd-item-section-renderer #items').then((elements) => {
-  contentParentElementsReady('ytd-shelf-renderer #contents').then((elements) => {
-    // today
-    var parent = elements[0];
-    var todayVideos = externalSubscriptions.today;
-    var newHtml = '<div class="external-content">';
-    for (var idx in todayVideos) {
-      var videoHtml = supplant(videoTmpl, todayVideos[idx]);
-      newHtml = newHtml + videoHtml;
-    }
-    newHtml = newHtml + '</div>';
-    var div = document.createElement('div');
-    div.innerHTML = newHtml.trim();
-    parent.prepend(div.firstChild);
+  contentParentElementsReady('ytd-shelf-renderer #contents').then(
+    (elements) => {
+      // today
+      var parent = elements[0];
+      var todayVideos = externalSubscriptions.today;
+      var newHtml = '<div class="external-content">';
+      for (var idx in todayVideos) {
+        var videoHtml = supplant(videoTmpl, todayVideos[idx]);
+        newHtml = newHtml + videoHtml;
+      }
+      newHtml = newHtml + '</div>';
+      var div = document.createElement('div');
+      div.innerHTML = newHtml.trim();
+      parent.prepend(div.firstChild);
 
-    // yesterday
-    var parent = elements[1];
-    var yesterdayVideos = externalSubscriptions.yesterday;
-    var newHtml = '<div class="external-content">';
-    for (var idx in yesterdayVideos) {
-      var videoHtml = supplant(videoTmpl, yesterdayVideos[idx]);
-      newHtml = newHtml + videoHtml;
-    }
-    newHtml = newHtml + '</div>';
-    var div = document.createElement('div');
-    div.innerHTML = newHtml.trim();
-    parent.prepend(div.firstChild);
+      // yesterday
+      var parent = elements[1];
+      var yesterdayVideos = externalSubscriptions.yesterday;
+      var newHtml = '<div class="external-content">';
+      for (var idx in yesterdayVideos) {
+        var videoHtml = supplant(videoTmpl, yesterdayVideos[idx]);
+        newHtml = newHtml + videoHtml;
+      }
+      newHtml = newHtml + '</div>';
+      var div = document.createElement('div');
+      div.innerHTML = newHtml.trim();
+      parent.prepend(div.firstChild);
 
-    // this week
-    var parent = elements[2];
-    var thisWeekVideos = externalSubscriptions.thisWeek;
-    var newHtml = '<div class="external-content">';
-    for (var idx in thisWeekVideos) {
-      var videoHtml = supplant(videoTmpl, thisWeekVideos[idx]);
-      newHtml = newHtml + videoHtml;
-    }
-    newHtml = newHtml + '</div>';
-    var div = document.createElement('div');
-    div.innerHTML = newHtml.trim();
-    parent.prepend(div.firstChild);
-  });
-
+      // this week
+      var parent = elements[2];
+      var thisWeekVideos = externalSubscriptions.thisWeek;
+      var newHtml = '<div class="external-content">';
+      for (var idx in thisWeekVideos) {
+        var videoHtml = supplant(videoTmpl, thisWeekVideos[idx]);
+        newHtml = newHtml + videoHtml;
+      }
+      newHtml = newHtml + '</div>';
+      var div = document.createElement('div');
+      div.innerHTML = newHtml.trim();
+      parent.prepend(div.firstChild);
+    },
+  );
 }
-
-
 
 function contentParentElementsReady(selector) {
   return new Promise((resolve, reject) => {
@@ -143,11 +144,10 @@ function contentParentElementsReady(selector) {
         resolve(els);
         observer.disconnect();
       }
-    })
-      .observe(document.documentElement, {
-        childList: true,
-        subtree: true
-      });
+    }).observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+    });
   });
 }
 
@@ -162,11 +162,10 @@ function elementReady(selector) {
         resolve(element);
         observer.disconnect();
       });
-    })
-      .observe(document.documentElement, {
-        childList: true,
-        subtree: true
-      });
+    }).observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+    });
   });
 }
 
@@ -177,46 +176,47 @@ function elementsReady(selector) {
       resolve(els);
     }
     new MutationObserver((mutationRecords, observer) => {
-      var els = document.querySelectorAll(selector)
+      var els = document.querySelectorAll(selector);
       if (els) {
         resolve(els);
         observer.disconnect();
       }
-    })
-      .observe(document.documentElement, {
-        childList: true,
-        subtree: true
-      });
+    }).observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+    });
   });
 }
 
-
 function requestUpdateFromBackend() {
   console.log('addExternalSubscriptionVideos called');
-  chrome.runtime.sendMessage({
-    type: 'UPDATE_THE_PAGE',
-  },
+  chrome.runtime.sendMessage(
+    {
+      type: 'UPDATE_THE_PAGE',
+    },
     function (externalSubscriptions) {
       render(externalSubscriptions);
     },
   );
 }
 
-
 function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
-
 
 async function render(externalSubscriptions) {
   var progress = document.querySelector('#progress');
-  while (progress && document.querySelector('#progress').style.transform != "scaleX(1)") {
+  while (
+    progress &&
+    document.querySelector('#progress').style.transform != 'scaleX(1)' &&
+    document.querySelector('#progress').style.transform != ''
+  ) {
     console.log('Progress bar not finished');
     await sleep(1000);
   }
   console.log('Progress bar finished');
 
-  document.querySelectorAll(".external-content").forEach(e => e.remove());
+  document.querySelectorAll('.external-content').forEach((e) => e.remove());
   for (var idx in externalSubscriptions) {
     var content = externalSubscriptions[idx];
     if (content.type === 'content') {
@@ -225,14 +225,18 @@ async function render(externalSubscriptions) {
   }
 }
 
-chrome.runtime.onMessage.addListener(async function (request, sender, sendResponse) {
+chrome.runtime.onMessage.addListener(async function (
+  request,
+  sender,
+  sendResponse,
+) {
   if (request.type === 'ON_SUBS_PAGE') {
     await render(request.data);
   }
 });
 
 window.onload = function () {
-  if (window.location.href.includes("/feed/subscriptions") === true) {
+  if (window.location.href.includes('/feed/subscriptions') === true) {
     requestUpdateFromBackend();
   }
-}
+};
