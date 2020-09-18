@@ -177,14 +177,14 @@ function parseVideosFromLbry(items) {
       typeof item.value.video !== 'undefined'
     ) {
       var videoLink =
-        'https://lbry.tv/' +
+        'https://odysee.com/' +
         item.signing_channel.normalized_name +
         '/' +
         item.normalized_name;
       if (item.value.thumbnail.url) {
         var thumbUrl = item.value.thumbnail.url;
       } else {
-        var thumbUrl = 'https://lbry.tv/public/img/placeholder.png';
+        var thumbUrl = 'https://odysee.com/public/img/placeholder.png';
       }
       var videoTitle = item.value.title;
       if (item.signing_channel.value.title) {
@@ -193,7 +193,7 @@ function parseVideosFromLbry(items) {
         var channelTitle = item.signing_channel.name;
       }
       var channelUrl =
-        'https://lbry.tv/' + item.signing_channel.normalized_name;
+        'https://odysee.com/' + item.signing_channel.normalized_name;
       var durationData = secondsToTime(item.value.video.duration);
       if (durationData.h) {
         var videoDuration =
