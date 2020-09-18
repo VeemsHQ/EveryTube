@@ -204,10 +204,8 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-var _externalSubscriptions;
-
 async function render(externalSubscriptions) {
-  if(pageObserver) {
+  if (pageObserver) {
     pageObserver.disconnect();
   }
   pageObserver = new MutationObserver(() => {
@@ -218,7 +216,7 @@ async function render(externalSubscriptions) {
       _inject(externalSubscriptions);
     }
   });
-  await _inject(externalSubscriptions);
+  pageObserver.observe(document.body, { childList: true, subtree: true });
 }
 
 async function _inject(externalSubscriptions) {
