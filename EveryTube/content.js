@@ -205,7 +205,18 @@ function sleep(ms) {
 }
 
 async function render(externalSubscriptions) {
-  if (pageObserver) {
+  var selector = 'yt-page-navigation-progress';
+  while (
+    document.querySelector(selector) != null &&
+    document.querySelector(selector).style.transform != 'scaleX(1)' &&
+    document.querySelector(selector).style.transform
+  ) {
+    console.log('Progress bar not finished');
+    await sleep(1000);
+  }
+  console.log('Progress bar finished');
+
+  if(pageObserver) {
     pageObserver.disconnect();
   }
   pageObserver = new MutationObserver(() => {
@@ -221,7 +232,7 @@ async function render(externalSubscriptions) {
 
 async function _inject(externalSubscriptions) {
   pageObserver.disconnect();
-  document.querySelectorAll('.external-content').forEach((e) => e.remove());
+  // document.querySelectorAll('.external-content').forEach((e) => e.remove());
   for (var idx in externalSubscriptions) {
     var content = externalSubscriptions[idx];
     if (content.type === 'content') {
