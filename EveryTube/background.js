@@ -84,7 +84,7 @@ function parseVideosFromBitchute(html_text) {
         !videoPublishedOn.includes('day')
       ) {
         videosPublishedToday.push(video);
-      } else {
+      } else if (videoPublishedOn.includes('days ago')) {
         videosPublishedThisWeek.push(video);
       }
     }

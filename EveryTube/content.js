@@ -1,3 +1,4 @@
+var pageObserver = null;
 var videoTmpl = `
 <div class="inserted-video style-scope ytd-grid-video-renderer">
 
@@ -87,7 +88,6 @@ function isRendered(els) {
 
 function addContent(externalSubscriptions) {
   console.log('addContent called');
-  // contentParentElementsReady('ytd-item-section-renderer #items').then((elements) => {
   contentParentElementsReady('ytd-shelf-renderer #contents').then(
     (elements) => {
       // today
@@ -205,24 +205,29 @@ function sleep(ms) {
 }
 
 async function render(externalSubscriptions) {
-  var selector = 'yt-page-navigation-progress';
-  while (
-    document.querySelector(selector) != null &&
-    document.querySelector(selector).style.transform != 'scaleX(1)' &&
-    document.querySelector(selector).style.transform
-  ) {
-    console.log('Progress bar not finished');
-    await sleep(1000);
-  }
-  console.log('Progress bar finished');
+  pageObserver = new MutationObserver(() => {
+    if (
+      externalSubscriptions.length > 0 &&
+      document.querySelectorAll('.external-content').length == 0
+    ) {
+      _inject(externalSubscriptions);
+    }
+  });
 
   document.querySelectorAll('.external-content').forEach((e) => e.remove());
+
+  await _inject(externalSubscriptions);
+}
+
+async function _inject(externalSubscriptions) {
+  pageObserver.disconnect();
   for (var idx in externalSubscriptions) {
     var content = externalSubscriptions[idx];
     if (content.type === 'content') {
       addContent(content);
     }
   }
+  pageObserver.observe(document.body, { childList: true, subtree: true });
 }
 
 chrome.runtime.onMessage.addListener(async function (
