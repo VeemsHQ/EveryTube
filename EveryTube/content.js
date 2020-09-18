@@ -204,7 +204,12 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+var _externalSubscriptions;
+
 async function render(externalSubscriptions) {
+  if(pageObserver) {
+    pageObserver.disconnect();
+  }
   pageObserver = new MutationObserver(() => {
     if (
       externalSubscriptions.length > 0 &&
@@ -213,14 +218,12 @@ async function render(externalSubscriptions) {
       _inject(externalSubscriptions);
     }
   });
-
-  document.querySelectorAll('.external-content').forEach((e) => e.remove());
-
   await _inject(externalSubscriptions);
 }
 
 async function _inject(externalSubscriptions) {
   pageObserver.disconnect();
+  document.querySelectorAll('.external-content').forEach((e) => e.remove());
   for (var idx in externalSubscriptions) {
     var content = externalSubscriptions[idx];
     if (content.type === 'content') {
