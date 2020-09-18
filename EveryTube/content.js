@@ -207,15 +207,22 @@ function sleep(ms) {
 async function render(externalSubscriptions) {
   var selector = 'yt-page-navigation-progress';
   while (
+    document.querySelector(selector) == null
+  ) {
+    console.log('Progress bar not created yet');
+    await sleep(200);
+  }
+  while (
     document.querySelector(selector) != null &&
     document.querySelector(selector).style.transform != 'scaleX(1)' &&
     document.querySelector(selector).style.transform
   ) {
     console.log('Progress bar not finished');
-    await sleep(1000);
+    await sleep(200);
   }
   console.log('Progress bar finished');
 
+  _inject(externalSubscriptions);
   if(pageObserver) {
     pageObserver.disconnect();
   }
@@ -232,7 +239,7 @@ async function render(externalSubscriptions) {
 
 async function _inject(externalSubscriptions) {
   pageObserver.disconnect();
-  // document.querySelectorAll('.external-content').forEach((e) => e.remove());
+  document.querySelectorAll('.external-content').forEach((e) => e.remove());
   for (var idx in externalSubscriptions) {
     var content = externalSubscriptions[idx];
     if (content.type === 'content') {
