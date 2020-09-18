@@ -66,15 +66,16 @@
     display: inline-block;
 }
 
-.inserted-video .lbry\.tv {
+.inserted-video .Odysee {
     opacity: 1;
     position: absolute;
     bottom: 4px;
     left: 4px;
     padding: 2px;
-    background: #257761;
+    background: #140f1a;
     letter-spacing: 0.5px;
-    color: #fff;
+    color: #d75673;
+    font-weight: bold;
     border-radius: 2px;
     display: inline-block;
 }

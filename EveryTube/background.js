@@ -6,7 +6,7 @@ var PROVIDER_URLS = {
 };
 var PROVIDER_LABELS = {
   bitchute: 'BitChute',
-  lbry: 'lbry.tv',
+  lbry: 'Odysee',
 };
 var PROVIDER_DOMAINS = [
   new URL(PROVIDER_URLS['bitchute']).host,
