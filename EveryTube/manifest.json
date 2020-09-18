@@ -1,7 +1,7 @@
 {
     "name": "EveryTube",
     "description": "Populates your YouTube Subscriptions page with content from other video platforms. Currently supports Bitchute and lbry.tv.",
-    "version": "0.2.2",
+    "version": "0.2.3",
     "icons": {
         "128": "images/icon-128.png"
     },
