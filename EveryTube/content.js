@@ -206,9 +206,7 @@ function sleep(ms) {
 
 async function render(externalSubscriptions) {
   var selector = 'yt-page-navigation-progress';
-  while (
-    document.querySelector(selector) == null
-  ) {
+  while (document.querySelector(selector) == null) {
     console.log('Progress bar not created yet');
     await sleep(200);
   }
@@ -223,7 +221,7 @@ async function render(externalSubscriptions) {
   console.log('Progress bar finished');
 
   _inject(externalSubscriptions);
-  if(pageObserver) {
+  if (pageObserver) {
     pageObserver.disconnect();
   }
   pageObserver = new MutationObserver(() => {
@@ -238,7 +236,9 @@ async function render(externalSubscriptions) {
 }
 
 async function _inject(externalSubscriptions) {
-  pageObserver.disconnect();
+  if (pageObserver) {
+    pageObserver.disconnect();
+  }
   document.querySelectorAll('.external-content').forEach((e) => e.remove());
   for (var idx in externalSubscriptions) {
     var content = externalSubscriptions[idx];
@@ -246,7 +246,9 @@ async function _inject(externalSubscriptions) {
       addContent(content);
     }
   }
-  pageObserver.observe(document.body, { childList: true, subtree: true });
+  if (pageObserver) {
+    pageObserver.observe(document.body, { childList: true, subtree: true });
+  }
 }
 
 chrome.runtime.onMessage.addListener(async function (
