@@ -205,6 +205,7 @@ function sleep(ms) {
 }
 
 async function render(externalSubscriptions) {
+  console.log(`rendering ${externalSubscriptions.length} external subscriptions...`)
   var selector = 'yt-page-navigation-progress';
   while (document.querySelector(selector) == null) {
     console.log('Progress bar not created yet');
@@ -218,10 +219,11 @@ async function render(externalSubscriptions) {
     console.log('Progress bar not finished');
     await sleep(200);
   }
-  console.log('Progress bar finished');
+  console.log('Progress bar finished!');
 
   _inject(externalSubscriptions);
   if (pageObserver) {
+    console.log('Disconnecting observer')
     pageObserver.disconnect();
   }
   pageObserver = new MutationObserver(() => {
