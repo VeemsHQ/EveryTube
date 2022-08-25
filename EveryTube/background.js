@@ -296,6 +296,7 @@ function fetchRetry(url, delay, tries, fetchOptions = {}) {
 updateProviderLoginState();
 
 async function fetchContentBitchute() {
+  console.log('fetching content from BitChute...')
   var cached = await getFromCache();
   if (cached) {
     return cached;
@@ -321,6 +322,7 @@ async function fetchContentBitchute() {
 }
 
 async function fetchContentLbry(previousAllVideos) {
+  console.log('fetching content from Odysee...')
   var cached = await getFromCache();
 
   if (cached) {
