@@ -20,6 +20,8 @@
   "permissions": ["cookies", "unlimitedStorage", "tabs", "history", "storage"],
   "host_permissions": [
     "https://www.youtube.com/*",
+    "https://www.odysee.com/*",
+    "https://odysee.com/*",
     "https://www.bitchute.com/",
     "https://lbry.tv/",
     "https://lbry.tv/$/following",
