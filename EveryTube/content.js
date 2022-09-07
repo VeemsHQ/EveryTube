@@ -87,7 +87,6 @@ function isRendered(els) {
 }
 
 function addContent(externalSubscriptions) {
-  console.log('addContent called');
   contentParentElementsReady('ytd-shelf-renderer #contents').then(
     (elements) => {
       // today
@@ -189,7 +188,6 @@ function elementsReady(selector) {
 }
 
 function requestUpdateFromBackend() {
-  console.log('requestUpdateFromBackend called');
   chrome.runtime.sendMessage(
     {
       type: 'UPDATE_THE_PAGE',
@@ -205,6 +203,12 @@ function sleep(ms) {
 }
 
 async function render(externalSubscriptions) {
+  if (!externalSubscriptions) {
+    console.log('skipping render as empty externalSubscriptions')
+    console.log(externalSubscriptions);
+    return
+  }
+  console.log(`rendering ${externalSubscriptions.length} external subscriptions...`)
   var selector = 'yt-page-navigation-progress';
   while (document.querySelector(selector) == null) {
     console.log('Progress bar not created yet');
@@ -218,7 +222,7 @@ async function render(externalSubscriptions) {
     console.log('Progress bar not finished');
     await sleep(200);
   }
-  console.log('Progress bar finished');
+  console.log('Progress bar finished!');
 
   _inject(externalSubscriptions);
   if (pageObserver) {

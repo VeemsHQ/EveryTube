@@ -1,41 +1,32 @@
 {
-    "name": "EveryTube",
-    "description": "Populates your YouTube Subscriptions page with content from other video platforms. Currently supports Bitchute and odysee.com.",
-    "version": "0.2.4",
-    "icons": {
-        "128": "images/icon-128.png"
-    },
-    "background": {
-        "scripts": [
-            "background.js"
-        ]
-    },
-    "content_scripts": [
-        {
-            "matches": [
-                "https://*.youtube.com/*"
-            ],
-            "css": [
-                "style.css"
-            ],
-            "js": [
-                "content.js"
-            ],
-            "run_at": "document_idle"
-        }
-    ],
-    "permissions": [
-        "https://www.youtube.com/*",
-        "https://www.bitchute.com/",
-        "https://lbry.tv/",
-        "https://lbry.tv/$/following",
-        "https://api.lbry.tv/*",
-        "https://api.lbry.com/*",
-        "cookies",
-        "unlimitedStorage",
-        "tabs",
-        "history",
-        "storage"
-    ],
-    "manifest_version": 2
+  "name": "EveryTube",
+  "description": "Populates your YouTube Subscriptions page with content from other video platforms. Currently supports Bitchute and odysee.com.",
+  "version": "0.2.5",
+  "icons": {
+    "128": "images/icon-128.png"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.youtube.com/*"],
+      "css": ["style.css"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "permissions": ["cookies", "unlimitedStorage", "tabs", "history", "storage"],
+  "host_permissions": [
+    "https://www.youtube.com/*",
+    "https://www.odysee.com/*",
+    "https://odysee.com/*",
+    "https://www.bitchute.com/",
+    "https://lbry.tv/",
+    "https://lbry.tv/$/following",
+    "https://api.lbry.tv/*",
+    "https://api.lbry.com/*"
+  ],
+  "manifest_version": 3
 }

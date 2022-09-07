@@ -1,3 +1,5 @@
+import { JSDOM } from './jsdom.js';
+
 var PROVIDER_URLS = {
   bitchute: 'https://www.bitchute.com',
   lbry: 'https://api.lbry.tv/api/v1/proxy?m=claim_search',
@@ -28,10 +30,10 @@ function isElement(o) {
   return typeof HTMLElement === 'object'
     ? o instanceof HTMLElement //DOM2
     : o &&
-        typeof o === 'object' &&
-        o !== null &&
-        o.nodeType === 1 &&
-        typeof o.nodeName === 'string';
+    typeof o === 'object' &&
+    o !== null &&
+    o.nodeType === 1 &&
+    typeof o.nodeName === 'string';
 }
 
 function kFormatter(num) {
@@ -41,29 +43,28 @@ function kFormatter(num) {
 }
 
 function parseVideosFromBitchute(html_text) {
-  var parser = new DOMParser();
-  var htmlDoc = parser.parseFromString(html_text, 'text/html');
-  var subs = htmlDoc.getElementById('listing-subscribed');
+  let dom = new JSDOM(html_text);
+  var subs = dom.window.document.getElementById('listing-subscribed');
   var videoEls = subs.querySelectorAll('.video-card');
   var videosPublishedToday = [];
   var videosPublishedYesterday = [];
   var videosPublishedThisWeek = [];
+  console.log(`videoEls=${videoEls.length}`)
   for (var videoElIdx in videoEls) {
     var el = videoEls[videoElIdx];
     if (isElement(el) == true) {
       var base = PROVIDER_URLS['bitchute'];
       var videoLink = base + el.querySelector('a').getAttribute('href');
       var thumbUrl = el.querySelector('img').getAttribute('data-src');
-      var videoTitle = el.querySelector('.video-card-title a').innerText;
-      var channelTitle = el.querySelector('.video-card-channel a').innerText;
+      var videoTitle = el.getElementsByClassName('video-card-title')[0].textContent;
+      var channelTitle = el.getElementsByClassName('video-card-channel')[0].textContent;
       var channelUrl =
         base + el.querySelector('.video-card-channel a').getAttribute('href');
-      var videoDuration = el.querySelector('.video-duration').innerText;
-      var videoPublishedOn = el.querySelector('.video-card-published')
-        .innerText;
+      var videoDuration = el.getElementsByClassName('video-duration')[0].textContent;
+      var videoPublishedOn = el.getElementsByClassName('video-card-published')[0].textContent;
       var videoViews = parseInt(
-        el.querySelector('.video-views').innerText.trim(),
-      );
+        el.getElementsByClassName('video-views')[0].textContent.trim().replace('.', '').replace('K', '00')
+      )
       var video = {
         videoLink: videoLink,
         thumbUrl: thumbUrl,
@@ -98,6 +99,7 @@ function parseVideosFromBitchute(html_text) {
 }
 
 function timeAgo(time) {
+
   var units = [
     {
       name: 'second',
@@ -139,10 +141,15 @@ function timeAgo(time) {
   if (diff < 5) return 'now';
 
   var i = 0;
-  while ((unit = units[i++])) {
+  var result;
+
+  while (i <= units.length) {
+    i++;
+    var unit = units[i]
     if (diff < unit.limit || !unit.limit) {
       var diff = Math.floor(diff / unit.in_seconds);
-      return diff + ' ' + unit.name + (diff > 1 ? 's' : '') + ' ago';
+      result = diff + ' ' + unit.name + (diff > 1 ? 's' : '') + ' ago';
+      return result
     }
   }
 }
@@ -165,6 +172,7 @@ function secondsToTime(secs) {
 }
 
 function parseVideosFromLbry(items) {
+  console.log(`parseVideosFromLbry ${items.length}`)
   var videosPublishedToday = [];
   var videosPublishedYesterday = [];
   var videosPublishedThisWeek = [];
@@ -236,6 +244,7 @@ function parseVideosFromLbry(items) {
 }
 
 function updateProviderLoginState() {
+  console.log('updateProviderLoginState...')
   PROVIDER_LOGGED_IN['bitchute'] = false;
   var cookieName = PROVIDER_LOGIN_STATE_COOKIE['bitchute'];
   var cookieUrl = PROVIDER_URLS['bitchute'];
@@ -253,7 +262,7 @@ function updateProviderLoginState() {
 
   PROVIDER_LOGGED_IN['lbry'] = false;
   var cookieName = PROVIDER_LOGIN_STATE_COOKIE['lbry'];
-  var cookieUrl = PROVIDER_URLS['lbry'];
+  var cookieUrl = 'https://odysee.com'
   chrome.cookies.get(
     {
       url: cookieUrl,
@@ -272,7 +281,7 @@ function loggedInToBitchute() {
   return PROVIDER_LOGGED_IN['bitchute'] === true;
 }
 
-function loggedInToLbry() {
+function loggedInToOdysee() {
   return PROVIDER_LOGGED_IN['lbry'] === true;
 }
 
@@ -296,12 +305,15 @@ function fetchRetry(url, delay, tries, fetchOptions = {}) {
 updateProviderLoginState();
 
 async function fetchContentBitchute() {
+  console.log('fetching content from BitChute...')
   var cached = await getFromCache();
   if (cached) {
     return cached;
   }
   var allVideos = [];
-  if (loggedInToBitchute() === true) {
+  const loggedIn = loggedInToBitchute() === true
+  console.log(`Bitchute, loggedIn=${loggedIn}`)
+  if (loggedIn) {
     console.debug('BitChute logged in, getting content');
     var url = PROVIDER_URLS['bitchute'];
     await fetchRetry(url, 0.2, 5, {
@@ -320,9 +332,9 @@ async function fetchContentBitchute() {
   return allVideos;
 }
 
-async function fetchContentLbry(previousAllVideos) {
+async function fetchContentOdysee(previousAllVideos) {
+  console.log('fetching content from Odysee...')
   var cached = await getFromCache();
-
   if (cached) {
     return cached;
   }
@@ -330,7 +342,9 @@ async function fetchContentLbry(previousAllVideos) {
   if (previousAllVideos) {
     allVideos = previousAllVideos;
   }
-  if (loggedInToLbry() === true) {
+  const loggedIn = loggedInToOdysee() === true;
+  console.log(`Odysee loggedIn=${loggedIn}`)
+  if (loggedIn) {
     var url = PROVIDER_URLS['lbry'];
     var releaseTimeQuery =
       '<' + parseInt(new Date().getTime() / 1000).toString();
@@ -442,6 +456,7 @@ function getFromCache() {
 }
 
 async function setCacheAndSendResponse(data, callback) {
+  console.log(`setCacheAndSendResponse ${data.length}`);
   var cached = await getFromCache();
   if (cached == null) {
     var cacheTime = Date.now();
@@ -466,11 +481,12 @@ async function setCacheAndSendResponse(data, callback) {
 chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
   if ((msg.type = 'UPDATE_THE_PAGE')) {
     fetchContentBitchute()
-      .then((res) => fetchContentLbry(res))
+      .then((res) => fetchContentOdysee(res))
       .then((res) => setCacheAndSendResponse(res, sendResponse));
   }
   return true;
 });
+
 
 chrome.cookies.onChanged.addListener(function (cookies) {
   if (
@@ -504,7 +520,7 @@ chrome.history.onVisited.addListener(function (result) {
     result.url.includes('https://www.youtube.com/feed/subscriptions') === true
   ) {
     fetchContentBitchute()
-      .then((res) => fetchContentLbry(res))
+      .then((res) => fetchContentOdysee(res))
       .then((res) => setCacheAndSendResponse(res, _sendResponse));
   }
 });
