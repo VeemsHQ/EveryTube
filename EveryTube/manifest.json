@@ -17,7 +17,7 @@
       "run_at": "document_idle"
     }
   ],
-  "permissions": ["cookies", "unlimitedStorage", "tabs", "history", "storage"],
+  "permissions": ["cookies", "unlimitedStorage", "history", "storage"],
   "host_permissions": [
     "https://www.youtube.com/*",
     "https://www.odysee.com/*",
